@@ -1,0 +1,11 @@
+/*
+ * Every stylesheet of the page. index.html links this file, so it blocks the first paint in development as it does
+ * in the build. Imported from JavaScript instead, Vite's dev server adds it only after the page has painted once,
+ * unstyled, with the splash card drawn black.
+ */
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/400-italic.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import './tokens.css';
+@import './app.css';

@@ -1,0 +1,698 @@
+/* Ported from the design prototype. No rounded corners (except dots and the info circle), no gradients. */
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--terra);
+}
+a:hover {
+  color: var(--dark);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font: 400 12px/1.5 var(--mono);
+  color: var(--dark);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* Header */
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+h1 {
+  margin: 0;
+  font: 500 24px/1 var(--serif);
+  color: var(--ink);
+}
+
+.spec {
+  color: var(--taupe);
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Controls */
+
+button,
+.btn {
+  white-space: nowrap;
+  font: 500 12px/1 var(--mono);
+  padding: 9px 14px;
+  border: 1px solid var(--dark);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+button:hover:not(:disabled),
+.btn:hover {
+  background: var(--dark);
+  color: #fff;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button.pri {
+  background: var(--dark);
+  color: #fff;
+}
+button.pri:hover:not(:disabled) {
+  background: var(--ink);
+}
+
+select {
+  font: 500 12px/1 var(--mono);
+  padding: 8px 10px;
+  border: 1px solid var(--dark);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+input[type='text'] {
+  width: 100%;
+  font: italic 500 17px/1.2 var(--serif);
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+input[type='number'] {
+  width: 72px;
+  font: 400 12px var(--mono);
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+input[type='text']:disabled {
+  background: transparent;
+  color: var(--taupe);
+}
+input[type='text']:focus,
+input[type='number']:focus {
+  outline: none;
+  border-color: var(--dark);
+}
+input[type='range'] {
+  flex: 1;
+  accent-color: var(--dark);
+}
+
+/* Layout */
+
+main {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 280px;
+  min-height: 0;
+}
+
+@media (max-width: 980px) {
+  main {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  #panel {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  body {
+    height: auto;
+  }
+  #list {
+    max-height: 80vh;
+  }
+  #stage {
+    height: 80vh;
+    align-self: start;
+  }
+}
+
+/* Slot list */
+
+#list {
+  overflow: auto;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+}
+
+/* «Clear list», under the cards; it stays in view while the list scrolls. */
+#listFoot {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 12px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+#listFoot[hidden] {
+  display: none;
+}
+#clearAll {
+  width: 100%;
+  padding: 7px 10px;
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: auto 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.slot:hover {
+  background: #fff;
+}
+.slot.cur {
+  background: #fff;
+  box-shadow: inset 3px 0 0 var(--terra);
+}
+.slot.over {
+  background: var(--over);
+}
+.slot .n {
+  color: var(--taupe);
+  font-size: 11px;
+  width: 18px;
+}
+.slot canvas {
+  width: 38px;
+  height: 53px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.slot .t {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.slot .t b {
+  font: 500 15px/1.15 var(--serif);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status dot + text */
+
+.st {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--taupe);
+}
+.st::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+  flex-shrink: 0;
+}
+.st.ok::before {
+  background: var(--ok);
+}
+.st.warn::before {
+  background: var(--warn);
+}
+.st.bad::before {
+  background: var(--terra);
+}
+
+/* Stage */
+
+#stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+/* The view scrolls once zoomed in; at 100 % the cards fit it. Its frame (#viewport) never has scrollbars. */
+#viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+#view {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  display: flex;
+  padding: 24px;
+}
+#view.pan {
+  cursor: grab;
+  user-select: none;
+}
+#view.panning {
+  cursor: grabbing;
+}
+#cards {
+  /* Centred while it fits; from the top left once it is larger, so every part of it can be scrolled to. */
+  margin: auto;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.cw {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.cw[hidden] {
+  display: none;
+}
+.cw span {
+  font-size: 10.5px;
+  color: var(--taupe);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cw canvas {
+  display: block;
+  background: #fff;
+  box-shadow: var(--card-shadow);
+}
+#fw {
+  position: relative;
+}
+#ghost {
+  position: absolute;
+  pointer-events: none;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#front {
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+}
+#front.drag {
+  cursor: grabbing;
+}
+#hint {
+  padding: 0 24px 16px;
+  font-size: 10.5px;
+  color: var(--taupe);
+  text-align: center;
+}
+
+/* Zoom controls, in the view's bottom right corner */
+
+#zoom {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1;
+  display: flex;
+  box-shadow: 0 1px 2px rgba(60, 40, 20, 0.12);
+}
+#zoom button {
+  padding: 6px 10px;
+}
+#zoom > * + * {
+  border-left: 0;
+}
+#zoom output {
+  min-width: 52px;
+  padding: 6px 4px;
+  border: 1px solid var(--dark);
+  background: #fff;
+  color: var(--ink);
+  font: 500 12px/1 var(--mono);
+  text-align: center;
+  cursor: default;
+}
+
+/* Drop zone: empty state, and an overlay while files are dragged over the window */
+
+#drop {
+  position: absolute;
+  inset: 16px;
+  border: 1.5px dashed var(--taupe);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(248, 245, 240, 0.92);
+  text-align: center;
+  padding: 20px;
+  z-index: 2;
+}
+#drop b {
+  font: 500 26px/1.1 var(--serif);
+  color: var(--ink);
+}
+body.dragging #drop,
+#stage.none #drop {
+  display: flex;
+}
+#stage.none #cards,
+#stage.none #zoom,
+#stage.none #hint {
+  visibility: hidden;
+}
+
+/* Panel */
+
+#panel {
+  overflow: auto;
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+}
+/* Sections fold (<details>); open, they keep the prototype's spacing: heading, 10 px, content. */
+.sec {
+  border-bottom: 1px solid var(--line);
+}
+.sec > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.sec > summary::-webkit-details-marker {
+  display: none;
+}
+.sec[open] > summary {
+  padding-bottom: 10px;
+}
+.sec > summary:focus-visible {
+  outline: 1px solid var(--dark);
+  outline-offset: -1px;
+}
+/* Chevron: down while closed, up while open. */
+.sec > summary::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 3px 0;
+  border-right: 1px solid var(--taupe);
+  border-bottom: 1px solid var(--taupe);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+.sec[open] > summary::after {
+  margin: 3px 2px 0 0;
+  transform: rotate(-135deg);
+}
+.sec > summary:hover h3 {
+  color: var(--dark);
+}
+.sec > summary:hover::after {
+  border-color: var(--dark);
+}
+.sec .body {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sec h3 {
+  flex: 1;
+  margin: 0;
+  font: 500 10.5px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--taupe);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.row label {
+  color: var(--dark);
+  flex: 1;
+}
+.row .info {
+  margin-left: 0;
+}
+.seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.seg button {
+  padding: 8px 0;
+}
+.seg button + button {
+  border-left: 0;
+}
+/* Three or more choices: one under another, so long labels fit in every language. */
+.seg--stack {
+  grid-template-columns: 1fr;
+}
+.seg--stack button + button {
+  border-left: 1px solid var(--dark);
+  border-top: 0;
+}
+.seg button.on {
+  background: var(--dark);
+  color: #fff;
+}
+.btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btns button {
+  flex: 1;
+  padding: 8px 10px;
+}
+.btn--grow {
+  flex: 1;
+  text-align: center;
+}
+/* A label button whose file input is disabled. */
+.btn.off {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--dark);
+}
+/* The name is upright on the back, the title and website italic: the fields show the same. */
+#artist {
+  font-style: normal;
+}
+#scV {
+  width: 42px;
+  text-align: right;
+}
+.big {
+  font: 500 30px/1 var(--serif);
+  color: var(--ink);
+}
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+.chk input {
+  accent-color: var(--dark);
+  margin: 0;
+}
+.muted {
+  color: var(--taupe);
+  font-size: 11px;
+  text-wrap: pretty;
+}
+.fname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+/*
+ * Info icon with a tooltip below and to the left. The tooltip hangs from the right edge of the line the icon sits on
+ * (a row, a check box, a section heading), not from the icon. An icon in front of an input sits too far left for a
+ * 252 px tooltip, and the panel (overflow: auto) cut off whatever crossed its left edge. Those lines centre their
+ * content, so 50% + 13 px is 6 px under the icon, as before.
+ */
+.row,
+.chk,
+.sec > summary {
+  position: relative;
+}
+
+.info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--taupe);
+  border-radius: 50%;
+  font: 500 9px/1 var(--mono);
+  color: var(--taupe);
+  cursor: help;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.info:hover,
+.info:focus {
+  border-color: var(--dark);
+  color: var(--dark);
+  outline: none;
+}
+.info:hover::after,
+.info:focus::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: 0;
+  top: calc(50% + 13px);
+  width: 230px;
+  padding: 9px 11px;
+  background: var(--ink);
+  color: #fff;
+  font: 400 11px/1.45 var(--mono);
+  text-transform: none;
+  letter-spacing: 0;
+  z-index: 10;
+  text-wrap: pretty;
+  white-space: normal;
+}
+/* A heading's line includes the section's padding: line the tooltip up with the fold arrow instead. */
+.sec > summary .info:hover::after,
+.sec > summary .info:focus::after {
+  right: 16px;
+}
+
+/* Splash: a card with its trim line marching, while the page starts and restores the saved work */
+
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  transition: opacity 0.45s ease;
+}
+#splash.out {
+  opacity: 0;
+  pointer-events: none;
+}
+.splash-card {
+  display: block;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.45s ease;
+}
+#splash.out .splash-card {
+  transform: scale(1.06);
+}
+/* The card's colours are on its shapes in index.html, so it never paints black. */
+.splash-card .pic {
+  animation: splash-breathe 1.6s ease-in-out infinite alternate;
+}
+.splash-card .trim {
+  animation: splash-march 1s linear infinite;
+}
+@keyframes splash-march {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+@keyframes splash-breathe {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+#splashText {
+  min-height: 1.5em;
+  margin: 22px 0 8px;
+  color: var(--taupe);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.splash-bar {
+  width: 120px;
+  height: 2px;
+  background: var(--line);
+}
+.splash-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--dark);
+  transition: width 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  #splash,
+  .splash-card,
+  .splash-bar span {
+    transition-duration: 1ms;
+  }
+  .splash-card .pic,
+  .splash-card .trim {
+    animation: none;
+  }
+}
+
+/* Toast */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 14px;
+  font-size: 11.5px;
+  display: none;
+  z-index: 5;
+  max-width: 90vw;
+}
+#toast.show {
+  display: block;
+}

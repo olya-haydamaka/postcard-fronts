@@ -1,0 +1,15 @@
+:root {
+  --bg: #efeae2;
+  --panel: #f8f5f0;
+  --line: #ddd3c5;
+  --ink: #2b241d;
+  --dark: #5b4e3e;
+  --taupe: #8a7862;
+  --terra: #b5533a;
+  --over: #f3e3dc;
+  --ok: oklch(0.55 0.09 140);
+  --warn: oklch(0.68 0.13 70);
+  --serif: 'Cormorant Garamond', serif;
+  --mono: 'JetBrains Mono', monospace;
+  --card-shadow: 0 1px 2px rgba(60, 40, 20, 0.12), 0 10px 30px rgba(60, 40, 20, 0.12);
+}

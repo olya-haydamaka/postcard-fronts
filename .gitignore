@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.wrangler/
+test-results/
+playwright-report/
+*.log
+.DS_Store
+
+# Claude Code: the agent's working notes and local settings stay on this machine.
+CLAUDE.md
+CLAUDE.local.md
+.claude/

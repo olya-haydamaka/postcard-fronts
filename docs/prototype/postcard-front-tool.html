@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Postcard fronts — fit &amp; export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#efeae2;--panel:#f8f5f0;--line:#ddd3c5;--ink:#2B241D;--dark:#5B4E3E;--taupe:#8A7862;--terra:#B5533A;--ok:oklch(0.55 0.09 140);--warn:oklch(0.68 0.13 70)}
+*{box-sizing:border-box}
+a{color:var(--terra)}a:hover{color:var(--dark)}
+html,body{height:100%}
+body{margin:0;background:var(--bg);font:400 12px/1.5 "JetBrains Mono",monospace;color:var(--dark);display:grid;grid-template-rows:auto minmax(0,1fr)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{margin:0;font:500 24px/1 "Cormorant Garamond",serif;color:var(--ink)}
+.spec{color:var(--taupe);flex:1;min-width:200px}
+button,.btn{white-space:nowrap;font:500 12px/1 "JetBrains Mono",monospace;padding:9px 14px;border:1px solid var(--dark);background:#fff;color:var(--ink);cursor:pointer}
+button:hover:not(:disabled),.btn:hover{background:var(--dark);color:#fff}
+button:disabled{opacity:.4;cursor:default}
+select{font:500 12px/1 "JetBrains Mono",monospace;padding:8px 10px;border:1px solid var(--dark);background:#fff;color:var(--ink);cursor:pointer}
+button.pri{background:var(--dark);color:#fff}button.pri:hover:not(:disabled){background:var(--ink)}
+main{display:grid;grid-template-columns:260px minmax(0,1fr) 280px;min-height:0}
+@media (max-width:980px){main{grid-template-columns:200px minmax(0,1fr)}#panel{grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}body{height:auto}#list{max-height:80vh}#stage{height:80vh;align-self:start}}
+#list{overflow:auto;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+.slot{display:grid;grid-template-columns:auto 38px minmax(0,1fr);gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.slot:hover{background:#fff}
+.slot.cur{background:#fff;box-shadow:inset 3px 0 0 var(--terra)}
+.slot.over{background:#f3e3dc}
+.slot .n{color:var(--taupe);font-size:11px;width:18px}
+.slot canvas{width:38px;height:53px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.slot .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.slot .t b{font:500 15px/1.15 "Cormorant Garamond",serif;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--taupe)}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--line);flex-shrink:0}
+.st.ok::before{background:var(--ok)}.st.warn::before{background:var(--warn)}.st.bad::before{background:var(--terra)}
+#stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;min-height:0;overflow:hidden}
+#cards{min-width:0;max-width:100%;display:flex;gap:28px;align-items:flex-start;justify-content:center}
+.cw[hidden]{display:none}.cw{display:flex;flex-direction:column;gap:8px;align-items:center}
+.cw span{font-size:10.5px;color:var(--taupe);letter-spacing:.06em;text-transform:uppercase}
+.cw canvas{display:block;background:#fff;box-shadow:0 1px 2px rgba(60,40,20,.12),0 10px 30px rgba(60,40,20,.12)}
+#fw{position:relative}#ghost{position:absolute;pointer-events:none;background:transparent!important;box-shadow:none!important}#front{position:relative;cursor:grab;touch-action:none}#front.drag{cursor:grabbing}#front.empty{cursor:default}
+#hint{font-size:10.5px;color:var(--taupe);text-align:center}
+#drop{position:absolute;inset:16px;border:1.5px dashed var(--taupe);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:rgba(248,245,240,.92);text-align:center;padding:20px;z-index:2}
+#drop b{font:500 26px/1.1 "Cormorant Garamond",serif;color:var(--ink)}
+body.dragging #drop,#stage.none #drop{display:flex}
+#stage.none #cards,#stage.none #hint{visibility:hidden}
+#panel{overflow:auto;border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+.sec{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.sec h3{margin:0;font:500 10.5px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe)}
+.row{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.row label{color:var(--dark);flex:1}.row .info{margin-left:0}
+.seg{display:grid;grid-template-columns:1fr 1fr}
+.seg button{padding:8px 0}.seg button+button{border-left:0}
+.seg button.on{background:var(--dark);color:#fff}
+input[type=text]{width:100%;font:italic 500 17px/1.2 "Cormorant Garamond",serif;padding:7px 9px;border:1px solid var(--line);background:#fff;color:var(--ink)}input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--dark)}
+input[type=number]{width:72px;font:400 12px "JetBrains Mono",monospace;padding:6px 8px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+input[type=range]{flex:1;accent-color:var(--dark)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns button{flex:1;padding:8px 10px}
+.big{font:500 30px/1 "Cormorant Garamond",serif;color:var(--ink)}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer}.chk input{accent-color:var(--dark);margin:0}
+.info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1px solid var(--taupe);border-radius:50%;font:500 9px/1 "JetBrains Mono",monospace;color:var(--taupe);cursor:help;flex-shrink:0;margin-left:auto}.info:hover,.info:focus{border-color:var(--dark);color:var(--dark);outline:none}.info:hover::after,.info:focus::after{content:attr(data-tip);position:absolute;right:0;top:20px;width:230px;padding:9px 11px;background:var(--ink);color:#fff;font:400 11px/1.45 "JetBrains Mono",monospace;text-transform:none;letter-spacing:0;z-index:10;text-wrap:pretty;white-space:normal}.chk{width:100%}.sec h3{display:flex;align-items:center;gap:6px}
+.muted{color:var(--taupe);font-size:11px;text-wrap:pretty}
+.fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 14px;font-size:11.5px;display:none;z-index:5;max-width:90vw}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+</head>
+<body>
+<header><h1 data-i18n="h1">Postcard fronts</h1><span class="spec">109 × 152 mm · 300 dpi · 1287 × 1795 px · RGB TIFF</span><label class="btn" for="files" data-i18n="add">Add pictures</label><input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,.tif,.tiff" multiple hidden><button id="expAll" class="pri" disabled>Export all</button><select id="lang" aria-label="Language"><option value="uk">Українська</option><option value="en">English</option></select></header>
+<main>
+<nav id="list" data-screen-label="Slots"></nav>
+<section id="stage" class="none" data-screen-label="Editor">
+<div id="cards"><div class="cw"><span data-i18n="front">Front</span><div id="fw"><canvas id="ghost"></canvas><canvas id="front"></canvas></div></div><div class="cw" id="backW" hidden><span data-i18n="back">Back</span><canvas id="back"></canvas></div></div>
+<div id="hint" data-i18n="hint">Drag to move (snaps to edges, trim, margins, centre; hold Alt to skip) · scroll or −/+ to scale · arrows nudge 0.5 mm (Shift 2 mm) · PgUp/PgDn switch card</div>
+<div id="drop"><b data-i18n="dropT">Drop pictures here</b><span class="muted" data-i18n="dropFmt">TIFF, JPG, PNG or WebP. Files are matched to titles by number (01…15) or name; the rest fill empty slots.</span><span class="muted" data-i18n="dropLocal">Nothing leaves your computer.</span></div>
+</section>
+<aside id="panel" data-screen-label="Panel">
+<div class="sec"><h3 data-i18n="sTitle">Title</h3><input type="text" id="ttl" spellcheck="false"><div class="btns"><button id="ttlReset" data-i18n="ttlReset">Reset to original</button></div></div>
+<div class="sec"><h3 data-i18n="sPic">Picture</h3><div class="fname" id="pName">—</div><div class="muted" id="pPx"></div><div class="btns"><label class="btn" for="one" style="flex:1;text-align:center" data-i18n="replace">Replace</label><input id="one" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,.tif,.tiff" hidden><button id="rm" data-i18n="remove">Remove</button></div></div>
+<div class="sec"><h3 data-i18n="sPlace">Placement</h3>
+<div class="seg"><button id="mAuto" data-i18n="auto" data-i18n-title="autoTip">Auto-fit</button><button id="mMan" data-i18n="manual" data-i18n-title="manTip">Manual</button></div>
+<div class="row"><label data-i18n="scale">Scale</label><input type="range" id="sc" min="20" max="300" step="1"><span id="scV" style="width:42px;text-align:right">100%</span></div>
+<div class="row"><label data-i18n="dx">X offset, mm</label><input type="number" id="dx" step="0.5"></div>
+<div class="row"><label data-i18n="dy">Y offset, mm</label><input type="number" id="dy" step="0.5"></div>
+<div class="btns"><button id="center" data-i18n="center">Centre</button><button id="reset" data-i18n="reset">Reset to auto</button></div>
+</div>
+<div class="sec"><h3><span data-i18n="sRes">Resolution</span><span class="info" tabindex="0" data-i18n-tip="resTip">i</span></h3><div class="row"><span class="big" id="dpi">—</span><span class="st" id="dpiSt"></span></div><div class="muted" id="placed"></div></div>
+<div class="sec"><h3 data-i18n="sCard">Card · all slots</h3>
+<div class="row"><label data-i18n="fitTo">Auto-fit to</label><span class="info" tabindex="0" data-i18n-tip="fitTip"></span></div>
+<div class="seg"><button id="fTrim" data-i18n="fitTrim">Fill card</button><button id="fMargin" data-i18n="fitMargin">Side margins</button></div>
+<div class="row"><label data-i18n="margin">Side margin, mm</label><span class="info" tabindex="0" data-i18n-tip="marginTip">i</span><input type="number" id="mg" min="0" max="30" step="0.5"></div>
+<div class="row"><label data-i18n="bleed">Bleed, mm</label><span class="info" tabindex="0" data-i18n-tip="bleedTip">i</span><input type="number" id="bl" min="0" max="5" step="0.5"></div>
+<div class="muted" id="trimNote"></div>
+</div>
+<div class="sec"><h3 data-i18n="sShow">Show</h3>
+<label class="chk"><input type="checkbox" id="oBleed"><span data-i18n="oBleed">Bleed area</span><span class="info" tabindex="0" data-i18n-tip="oBleedTip">i</span></label>
+<label class="chk"><input type="checkbox" id="oTrim"><span data-i18n="oTrim">Trim line</span><span class="info" tabindex="0" data-i18n-tip="oTrimTip">i</span></label>
+<label class="chk"><input type="checkbox" id="oSafe"><span data-i18n="oSafe">Safe zone &amp; margins</span><span class="info" tabindex="0" data-i18n-tip="oSafeTip">i</span></label>
+<label class="chk"><input type="checkbox" id="oBack"><span data-i18n="oBack">Back side by side</span><span class="info" tabindex="0" data-i18n-tip="oBackTip">i</span></label>
+</div>
+<div class="sec"><h3 data-i18n="sExp">Export</h3><button id="expOne" class="pri" disabled>Export this card</button><label class="chk"><input type="checkbox" id="withBack" checked><span data-i18n="withBack">Also export backs</span></label><div class="muted" data-i18n="filesNote">Files: “01 Багрянці - front.tiff”, “01 Багрянці - back.tiff”.</div></div>
+</aside>
+</main>
+<div id="toast"></div>
+<script>
+const TITLES=["Багрянці","У затінку саду","Ожина","Простір","Сосна. Пісня гірського вітру","Тепло","Вечірній ліхтар","Місто моє","Їжакові стежки","Березовий гай, травневий спокій","Єдиний промінь","Руда лисиця","Подвір'я, що спить","Ранній іній","Щебет птахів"];
+const CW=109,CH=152,DPI=300,PXMM=DPI/25.4,W=Math.round(CW*PXMM),H=Math.round(CH*PXMM),SAFE=5,F='"Cormorant Garamond"';
+const S={slots:TITLES.map((t,i)=>({i,t,t0:t,img:null,name:'',iw:0,ih:0,mode:'auto',s:1,dx:0,dy:0})),cur:0,fit:'trim',margin:10,bleed:2,ov:{bleed:true,trim:true,safe:false,back:false},withBack:true,k:3};
+const $=id=>document.getElementById(id);
+const I18N={
+en:{h1:'Postcard fronts',add:'Add pictures',expAll:n=>`Export all (${n})`,front:'Front',back:'Back',
+hint:'Double-click to centre horizontally · Drag to move (snaps to edges, trim, margins, centre; hold Alt to skip) · scroll or −/+ to scale · arrows nudge 0.5 mm (Shift 2 mm) · PgUp/PgDn switch card',
+dropT:'Drop pictures here',dropFmt:'TIFF, JPG, PNG or WebP. Files are matched to titles by number (01…15) or name; the rest fill empty slots.',dropLocal:'Nothing leaves your computer.',
+sTitle:'Title',ttlReset:'Reset to original',sPic:'Picture',replace:'Replace',remove:'Remove',sPlace:'Placement',auto:'Auto-fit',manual:'Manual',
+autoTip:'Fill card: the picture covers the whole card including bleed, aligned to the top; the excess is cut off at the bottom or sides. Side margins mode: see Card.',fitTo:'Auto-fit mode',fitTrim:'Fill card',fitMargin:'Side margins',fitTip:'Fill card: the picture covers the whole card including bleed, aligned to the top and centred horizontally. Whatever doesn\'t fit is cut off, usually the bottom, where the signature is. Side margins: the whole picture sits inside the side margins with white space around it. Applies to all cards in Auto-fit.',manTip:'Move and scale the picture yourself',
+scale:'Scale',dx:'X offset, mm',dy:'Y offset, mm',center:'Centre',reset:'Reset to auto',sRes:'Resolution',
+resTip:'Effective dpi of the picture at its placed size. 300 or more prints sharp; 200–299 may look soft; below 200 looks blurry. Scaling up lowers it.',
+sCard:'Card · all slots',margin:'Side margin, mm',marginTip:'White space from the file edge to the picture, left and right. Auto-fit uses it for every card. After trimming, the visible margin is this value minus the bleed.',
+bleed:'Bleed, mm',bleedTip:'How much of each edge the studio cuts off. 109 × 152 mm with a 2 mm bleed gives a 105 × 148 mm card. Changes the overlays only, not the exported file.',
+sShow:'Show',oBleed:'Bleed area',oBleedTip:'Tinted strip outside the trim line. It gets cut off after printing. The picture or white background must extend into it so no thin edge is left after cutting.',
+oTrim:'Trim line',oTrimTip:'Red dashed line where the studio cuts the card. The final card size is 105 × 148 mm. The cut can move about 1 mm either way.',
+oSafe:'Safe zone & margins',oSafeTip:'Dotted box 5 mm inside the trim: keep anything important, like the signature, inside it. The thin vertical lines show the side margin set in Card.',
+oBack:'Back side by side',oBackTip:'Shows the back of this card (option G with this title) next to the front, for a quick check of how the pair looks.',
+sExp:'Export',expOne:'Export this card',withBack:'Also export backs',filesNote:'Files: “01 Багрянці - front.tiff”, “01 Багрянці - back.tiff”.',
+noPic:'No picture',noPicSlot:n=>`No picture in slot ${n}`,low:'low',tooLow:'too low',good:'Good for print',soft:'May look soft',blurry:'Will look blurry',
+placed:(w,h)=>`Placed ${w} × ${h} mm`,cropped:' · cropped by card edge',trim:(w,h,m)=>`Trim ${w} × ${h} mm · visible side margin after trim ${m} mm`,
+exporting:'Exporting…',exportingN:(k,n)=>`Exporting ${k}/${n}…`,confirmLow:(n,l)=>`${n} card(s) are below 300 dpi: ${l}. Export anyway?`,
+exported:(n,b)=>`Exported ${n} front${b?' + back':''} files`,cantRead:f=>`Can't read ${f}`,
+matched:(m,f,s)=>`${m} matched by name${f?`, ${f} placed in empty slots — check titles`:''}${s?`, ${s} skipped (no free slot)`:''}`},
+uk:{h1:'Лицьовий бік листівок',add:'Додати картини',expAll:n=>`Експортувати все (${n})`,front:'Лицьовий бік',back:'Зворот',
+hint:'Подвійний клік — по центру горизонтально · Перетягуйте, щоб посунути (прилипає до країв, лінії обрізу, полів, центру; з Alt — без прилипання) · колесо або −/+ — масштаб · стрілки — зсув 0,5 мм (Shift — 2 мм) · PgUp/PgDn — інша листівка',
+dropT:'Перетягніть картини сюди',dropFmt:'TIFF, JPG, PNG або WebP. Файли зіставляються з назвами за номером (01…15) або назвою; решта заповнює порожні слоти.',dropLocal:'Файли не залишають ваш комп’ютер.',
+sTitle:'Назва',ttlReset:'Повернути початкову',sPic:'Картина',replace:'Замінити',remove:'Прибрати',sPlace:'Розміщення',auto:'Автопідгонка',manual:'Вручну',
+autoTip:'Заповнити листівку: картина вкриває всю листівку разом із вильотом, вирівняна по верху; зайве обрізається знизу або з боків. Режим бічних полів — див. «Листівка».',fitTo:'Автопідгонка',fitTrim:'Заповнити листівку',fitMargin:'Бічні поля',fitTip:'Заповнити листівку: картина вкриває всю листівку разом із вильотом, вирівняна по верху й по центру горизонтально. Те, що не вміщається, обрізається — зазвичай низ, де підпис. Бічні поля: уся картина стоїть між бічними полями з білим простором навколо. Діє для всіх листівок в автопідгонці.',manTip:'Пересувайте й масштабуйте картину самостійно',
+scale:'Масштаб',dx:'Зсув X, мм',dy:'Зсув Y, мм',center:'По центру',reset:'Скинути до авто',sRes:'Роздільність',
+resTip:'Ефективна роздільність картини в її розмірі на листівці. 300 dpi і більше — чіткий друк; 200–299 — може бути м’яко; менше 200 — розмито. Збільшення масштабу її знижує.',
+sCard:'Листівка · усі слоти',margin:'Бічне поле, мм',marginTip:'Біле поле від краю файлу до картини зліва й справа. Автопідгонка застосовує його до всіх листівок. Після обрізу видиме поле дорівнює цьому значенню мінус виліт.',
+bleed:'Виліт, мм',bleedTip:'Скільки з кожного краю обріже друкарня. 109 × 152 мм із вильотом 2 мм дає листівку 105 × 148 мм. Впливає лише на накладки, не на експортований файл.',
+sShow:'Показати',oBleed:'Зона вильоту',oBleedTip:'Тонована смуга поза лінією обрізу. Її відрізають після друку. Картина або білий фон мають заходити на неї, щоб після обрізу не лишилося тонкого краю.',
+oTrim:'Лінія обрізу',oTrimTip:'Червона пунктирна лінія, по якій друкарня ріже листівку. Кінцевий розмір — 105 × 148 мм. Різ може зміститися приблизно на 1 мм.',
+oSafe:'Безпечна зона й поля',oSafeTip:'Пунктирна рамка за 5 мм усередині лінії обрізу: усе важливе, як-от підпис, тримайте всередині. Тонкі вертикальні лінії показують бічне поле з розділу «Листівка».',
+oBack:'Зворот поруч',oBackTip:'Показує зворот цієї листівки (варіант G із цією назвою) поруч із лицьовим боком, щоб перевірити, як вони виглядають разом.',
+sExp:'Експорт',expOne:'Експортувати цю листівку',withBack:'Також експортувати звороти',filesNote:'Файли: «01 Багрянці - front.tiff», «01 Багрянці - back.tiff».',
+noPic:'Немає картини',noPicSlot:n=>`Немає картини в слоті ${n}`,low:'низька',tooLow:'занизька',good:'Добре для друку',soft:'Може бути м’яко',blurry:'Буде розмито',
+placed:(w,h)=>`Розмір ${w} × ${h} мм`,cropped:' · обрізано краєм листівки',trim:(w,h,m)=>`Обріз ${w} × ${h} мм · видиме бічне поле після обрізу ${m} мм`,
+exporting:'Експорт…',exportingN:(k,n)=>`Експорт ${k}/${n}…`,confirmLow:(n,l)=>`Листівок із роздільністю менше 300 dpi: ${n} (${l}). Все одно експортувати?`,
+exported:(n,b)=>`Експортовано файлів: ${n} лицьових${b?' + звороти':''}`,cantRead:f=>`Не вдалося прочитати ${f}`,
+matched:(m,f,s)=>`Зіставлено за назвою: ${m}${f?`; у порожні слоти: ${f} — перевірте назви`:''}${s?`; пропущено: ${s} (немає вільних слотів)`:''}`}};
+let LANG=localStorage.getItem('haydamaka-postcard-lang')||'uk';if(!I18N[LANG])LANG='uk';
+const T=(k,...a)=>{const v=I18N[LANG][k]??I18N.en[k];return typeof v==='function'?v(...a):v};
+function applyLang(){document.documentElement.lang=LANG;$('lang').value=LANG;document.title=T('h1');
+document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=T(e.dataset.i18n));
+document.querySelectorAll('[data-i18n-tip]').forEach(e=>e.dataset.tip=T(e.dataset.i18nTip));
+document.querySelectorAll('[data-i18n-title]').forEach(e=>e.title=T(e.dataset.i18nTitle));
+if($('list').children.length){S.slots.forEach(renderThumb);renderPanel()}}
+const pad=i=>String(i+1).padStart(2,'0');
+const cur=()=>S.slots[S.cur];
+function autoRect(sl){if(S.fit==='trim'){const k=Math.max(CW/sl.iw,CH/sl.ih),w=sl.iw*k,h=sl.ih*k;return{x:(CW-w)/2,y:0,w,h}}const m=S.margin,bw=CW-2*m,bh=CH-2*m;let w=bw,h=w*sl.ih/sl.iw;if(h>bh){h=bh;w=h*sl.iw/sl.ih}return{x:(CW-w)/2,y:(CH-h)/2,w,h}}
+function rect(sl){const a=autoRect(sl);if(sl.mode==='auto')return a;const w=a.w*sl.s,h=a.h*sl.s;return{x:(CW-w)/2+sl.dx,y:(CH-h)/2+sl.dy,w,h}}
+const dpiOf=sl=>sl.iw/(rect(sl).w/25.4);
+const status=sl=>{if(!sl.img)return['',T('noPic')];const d=dpiOf(sl);return d>=300?['ok',Math.round(d)+' dpi']:d>=200?['warn',Math.round(d)+' dpi · '+T('low')]:['bad',Math.round(d)+' dpi · '+T('tooLow')]};
+function drawFront(c,sl,k){c.fillStyle='#fff';c.fillRect(0,0,CW*k,CH*k);if(!sl.img)return;const r=rect(sl);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(sl.img,r.x*k,r.y*k,r.w*k,r.h*k)}
+function drawBack(c,t,k){const M=10*k,FS=3.25*k,LS=3*k;c.fillStyle='#fff';c.fillRect(0,0,CW*k,CH*k);
+c.font=`500 ${FS}px ${F}`;c.letterSpacing=(0.08*FS)+'px';c.fillStyle='#5B4E3E';const nm='ГАЙДАМАКА ОЛЯ',base=M+c.measureText(nm).actualBoundingBoxAscent;c.fillText(nm,M,base);
+c.letterSpacing='0px';c.font=`italic 400 ${FS}px ${F}`;c.fillStyle='#8A7862';c.fillText(`«${t}»`,M,base+4.75*k);
+c.font=`italic 400 ${LS}px ${F}`;c.fillStyle='#B5533A';c.fillText('haydamaka.com',M,CH*k-M-c.measureText('haydamaka.com').actualBoundingBoxDescent)}
+function drawOverlays(c,k,front){if(!front&&S.snap){const sv=S.snap;S.snap=null;drawOverlays(c,k);S.snap=sv;return}const b=S.bleed;c.save();
+if(S.ov.bleed&&b>0){c.fillStyle='rgba(181,83,58,.13)';c.beginPath();c.rect(0,0,CW*k,CH*k);c.rect(b*k,b*k,(CW-2*b)*k,(CH-2*b)*k);c.fill('evenodd')}
+c.lineWidth=1;
+if(S.ov.trim){c.strokeStyle='#b2463a';c.setLineDash([6,4]);c.strokeRect(b*k+.5,b*k+.5,(CW-2*b)*k-1,(CH-2*b)*k-1)}
+if(S.ov.safe){const s=b+SAFE;c.strokeStyle='rgba(91,78,62,.55)';c.setLineDash([2,3]);c.strokeRect(s*k,s*k,(CW-2*s)*k,(CH-2*s)*k);
+const m=S.margin;c.strokeStyle='rgba(138,120,98,.5)';c.setLineDash([]);c.beginPath();c.moveTo(m*k,0);c.lineTo(m*k,CH*k);c.moveTo((CW-m)*k,0);c.lineTo((CW-m)*k,CH*k);c.stroke()}
+if(S.snap){c.strokeStyle='#B5533A';c.setLineDash([]);c.lineWidth=1.5;c.beginPath();if(S.snap.x!=null){c.moveTo(S.snap.x*k,0);c.lineTo(S.snap.x*k,CH*k)}if(S.snap.y!=null){c.moveTo(0,S.snap.y*k);c.lineTo(CW*k,S.snap.y*k)}c.stroke()}
+c.restore()}
+function sizeCanvas(cv,k){const r=devicePixelRatio||1;cv.width=Math.round(CW*k*r);cv.height=Math.round(CH*k*r);cv.style.width=CW*k+'px';cv.style.height=CH*k+'px';const c=cv.getContext('2d');c.setTransform(r,0,0,r,0,0);return c}
+const GP=14;
+function drawGhost(sl,k){const g=$('ghost'),r=devicePixelRatio||1,gw=(CW+2*GP)*k,gh=(CH+2*GP)*k;g.width=Math.round(gw*r);g.height=Math.round(gh*r);g.style.width=gw+'px';g.style.height=gh+'px';g.style.left=g.style.top=(-GP*k)+'px';$('fw').style.margin=(GP*k)+'px';
+const c=g.getContext('2d');c.setTransform(r,0,0,r,0,0);c.clearRect(0,0,gw,gh);if(!sl.img)return;const q=rect(sl);c.translate(GP*k,GP*k);
+c.save();c.globalAlpha=.42;c.filter=`blur(${Math.max(2,k*.9)}px)`;c.drawImage(sl.img,q.x*k,q.y*k,q.w*k,q.h*k);c.restore();
+c.strokeStyle='rgba(91,78,62,.6)';c.setLineDash([3,3]);c.lineWidth=1;c.strokeRect(q.x*k+.5,q.y*k+.5,q.w*k-1,q.h*k-1)}
+function fitK(){const st=$('stage'),n=S.ov.back?2:1;const aw=(st.clientWidth-48-(n-1)*28)/(CW+2*GP+(n-1)*CW),ah=(Math.min(st.clientHeight,innerHeight-document.querySelector('header').offsetHeight)-24-50)/(CH+2*GP);S.k=Math.max(1.2,Math.min(aw,ah,6))}
+function renderStage(){const sl=cur();fitK();drawGhost(sl,S.k);const fc=sizeCanvas($('front'),S.k);drawFront(fc,sl,S.k);drawOverlays(fc,S.k,true);
+$('front').classList.toggle('empty',!sl.img);$('backW').hidden=!S.ov.back;if(S.ov.back){const bc=sizeCanvas($('back'),S.k);drawBack(bc,sl.t,S.k);drawOverlays(bc,S.k)}
+$('stage').classList.toggle('none',!S.slots.some(s=>s.img))}
+function renderThumb(sl){const cv=document.querySelector(`.slot[data-i="${sl.i}"] canvas`),c=sizeCanvas(cv,38/CW);drawFront(c,sl,38/CW);const [cls,txt]=status(sl),st=document.querySelector(`.slot[data-i="${sl.i}"] .st`);st.className='st '+cls;st.textContent=txt}
+function renderPanel(){const sl=cur(),has=!!sl.img;if(document.activeElement!==$('ttl'))$('ttl').value=sl.t;$('ttlReset').disabled=sl.t===sl.t0;$('pName').textContent=has?sl.name:T('noPicSlot',pad(sl.i));$('pPx').textContent=has?`${sl.iw} × ${sl.ih} px`:'';
+['mAuto','mMan','sc','dx','dy','center','reset','rm','expOne'].forEach(id=>$(id).disabled=!has);
+$('mAuto').classList.toggle('on',sl.mode==='auto');$('mMan').classList.toggle('on',sl.mode==='manual');
+$('sc').value=Math.round(sl.s*100);$('scV').textContent=Math.round(sl.s*100)+'%';$('dx').value=+sl.dx.toFixed(1);$('dy').value=+sl.dy.toFixed(1);
+if(has){const r=rect(sl),[cls,txt]=status(sl);$('dpi').textContent=Math.round(dpiOf(sl));$('dpiSt').className='st '+cls;$('dpiSt').textContent=T(cls==='ok'?'good':cls==='warn'?'soft':'blurry');
+const cl=r.x<0||r.y<0||r.x+r.w>CW||r.y+r.h>CH;$('placed').textContent=T('placed',r.w.toFixed(1),r.h.toFixed(1))+(cl?T('cropped'):'')}else{$('dpi').textContent='—';$('dpiSt').className='st';$('dpiSt').textContent='';$('placed').textContent=''}
+$('fTrim').classList.toggle('on',S.fit==='trim');$('fMargin').classList.toggle('on',S.fit==='margin');$('mg').disabled=S.fit==='trim';$('mg').value=S.margin;$('bl').value=S.bleed;$('trimNote').textContent=T('trim',(CW-2*S.bleed).toFixed(1),(CH-2*S.bleed).toFixed(1),(S.margin-S.bleed).toFixed(1));
+const n=S.slots.filter(s=>s.img).length;$('expAll').disabled=!n;$('expAll').textContent=T('expAll',n);
+document.querySelectorAll('.slot').forEach(e=>e.classList.toggle('cur',+e.dataset.i===S.cur))}
+function update(sl=cur()){renderThumb(sl);if(sl===cur()){renderStage();renderPanel()}else renderPanel()}
+function buildList(){$('list').innerHTML=S.slots.map(sl=>`<div class="slot" data-i="${sl.i}"><span class="n">${pad(sl.i)}</span><canvas></canvas><div class="t"><b>${sl.t}</b><span class="st"></span></div></div>`).join('');
+document.querySelectorAll('.slot').forEach(e=>{const i=+e.dataset.i;e.onclick=()=>select(i);
+e.ondragover=ev=>{ev.preventDefault();ev.stopPropagation();e.classList.add('over')};e.ondragleave=()=>e.classList.remove('over');
+e.ondrop=ev=>{ev.preventDefault();ev.stopPropagation();e.classList.remove('over');document.body.classList.remove('dragging');const f=[...ev.dataTransfer.files].find(isImg);if(f)load(f,i).then(()=>select(i))}});
+S.slots.forEach(renderThumb)}
+function select(i){S.cur=Math.max(0,Math.min(14,i));renderStage();renderPanel()}
+const norm=s=>s.normalize('NFC').toLowerCase().replace(/\.[a-z0-9]+$/i,'').replace(/[’ʼ'`"«».,\-_()]/g,' ').replace(/\s+/g,' ').trim();
+function matchIdx(name){const n=norm(name),num=n.match(/^(\d{1,2})(?!\d)/);if(num){const i=+num[1]-1;if(i>=0&&i<15)return i}
+const nn=n.replace(/^\d+\s*/,''),ts=S.slots.flatMap(s=>[[s.i,s.t],[s.i,s.t0]]);let f=ts.find(([,t])=>norm(t)===nn);if(!f&&nn.length>3)f=ts.find(([,t])=>nn.includes(norm(t))||norm(t).includes(nn));return f?f[0]:-1}
+const isImg=f=>/^image\//.test(f.type)||/\.(tiff?|jpe?g|png|webp)$/i.test(f.name);
+const isTiff=f=>/tiff/.test(f.type)||/\.tiff?$/i.test(f.name);
+async function decode(file){if(!isTiff(file))return createImageBitmap(file);
+const buf=await file.arrayBuffer(),ifds=UTIF.decode(buf);let p=ifds[0];for(const d of ifds)if((d.width||0)*(d.height||0)>(p.width||0)*(p.height||0))p=d;
+UTIF.decodeImage(buf,p);const rgba=UTIF.toRGBA8(p);return createImageBitmap(new ImageData(new Uint8ClampedArray(rgba.buffer,rgba.byteOffset,p.width*p.height*4),p.width,p.height))}
+async function load(file,i){let img;try{img=await decode(file)}catch(e){console.error(e);toast(T('cantRead',file.name));return false}
+Object.assign(S.slots[i],{img,name:file.name,iw:img.width,ih:img.height,mode:'auto',s:1,dx:0,dy:0});renderThumb(S.slots[i]);return true}
+async function addFiles(files){files=[...files].filter(isImg);if(!files.length)return;let matched=0,filled=0,skipped=0;const used=new Set(),rest=[];
+for(const f of files){const i=matchIdx(f.name);if(i>=0&&!used.has(i)){used.add(i);if(await load(f,i))matched++}else rest.push(f)}
+for(const f of rest){const i=S.slots.findIndex(s=>!s.img&&!used.has(s.i));if(i<0){skipped++;continue}used.add(i);if(await load(f,i))filled++}
+const first=[...used].sort((a,b)=>a-b)[0];if(first!=null)S.cur=first;renderStage();renderPanel();
+toast(T('matched',matched,filled,skipped))}
+function toMan(sl){if(sl.mode==='auto'){const r=autoRect(sl);sl.mode='manual';sl.s=1;sl.dx=r.x-(CW-r.w)/2;sl.dy=r.y-(CH-r.h)/2}}
+let drag=null;
+$('front').addEventListener('pointerdown',e=>{const sl=cur();if(!sl.img)return;toMan(sl);drag={x:e.clientX,y:e.clientY,dx:sl.dx,dy:sl.dy};$('front').setPointerCapture(e.pointerId);$('front').classList.add('drag')});
+const SNAP=1.5;
+function snapAxis(pos,size,full,lines){let best=null;for(const t of lines)for(const [off,kind] of [[0,'s'],[size,'e'],[size/2,'c']]){if(kind==='c'&&t!==full/2)continue;const d=t-(pos+off);if(Math.abs(d)<=SNAP&&(!best||Math.abs(d)<Math.abs(best.d)))best={d,t}}return best}
+function guides(full){const b=S.bleed,m=S.margin,s=b+SAFE;return [...new Set([0,b,s,m,full/2,full-m,full-s,full-b,full])]}
+$('front').addEventListener('pointermove',e=>{if(!drag)return;const sl=cur();sl.dx=drag.dx+(e.clientX-drag.x)/S.k;sl.dy=drag.dy+(e.clientY-drag.y)/S.k;S.snap=null;
+if(!e.altKey){const r=rect(sl),sx=snapAxis(r.x,r.w,CW,guides(CW)),sy=snapAxis(r.y,r.h,CH,guides(CH));if(sx)sl.dx+=sx.d;if(sy)sl.dy+=sy.d;S.snap={x:sx?sx.t:null,y:sy?sy.t:null}}update(sl)});
+['pointerup','pointercancel'].forEach(t=>$('front').addEventListener(t,()=>{drag=null;S.snap=null;renderStage();$('front').classList.remove('drag')}));
+$('front').addEventListener('dblclick',()=>{const sl=cur();if(!sl.img)return;toMan(sl);sl.dx=0;update(sl)});
+$('front').addEventListener('wheel',e=>{const sl=cur();if(!sl.img)return;e.preventDefault();toMan(sl);sl.s=Math.max(.2,Math.min(3,sl.s*Math.exp(-Math.max(-60,Math.min(60,e.deltaY))*.0004)));update(sl)},{passive:false});
+$('mAuto').onclick=$('reset').onclick=()=>{Object.assign(cur(),{mode:'auto',s:1,dx:0,dy:0});update()};
+$('mMan').onclick=()=>{toMan(cur());update()};
+$('sc').oninput=e=>{const sl=cur();toMan(sl);sl.s=e.target.value/100;update(sl)};
+$('dx').onchange=e=>{const sl=cur();toMan(sl);sl.dx=+e.target.value||0;update(sl)};
+$('dy').onchange=e=>{const sl=cur();toMan(sl);sl.dy=+e.target.value||0;update(sl)};
+$('center').onclick=()=>{const sl=cur();sl.dx=0;sl.dy=0;update(sl)};
+$('rm').onclick=()=>{Object.assign(cur(),{img:null,name:'',iw:0,ih:0,mode:'auto',s:1,dx:0,dy:0});update()};
+$('one').onchange=e=>{const f=e.target.files[0];if(f)load(f,S.cur).then(()=>update());e.target.value=''};
+$('files').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+$('mg').onchange=e=>{S.margin=Math.max(0,Math.min(30,+e.target.value||0));S.slots.forEach(renderThumb);renderStage();renderPanel()};
+$('bl').onchange=e=>{S.bleed=Math.max(0,Math.min(5,+e.target.value||0));S.slots.forEach(renderThumb);renderStage();renderPanel()};
+[['fTrim','trim'],['fMargin','margin']].forEach(([id,v])=>$(id).onclick=()=>{S.fit=v;S.slots.forEach(renderThumb);renderStage();renderPanel()});
+[['oBleed','bleed'],['oTrim','trim'],['oSafe','safe'],['oBack','back']].forEach(([id,k])=>{$(id).checked=S.ov[k];$(id).onchange=e=>{S.ov[k]=e.target.checked;renderStage()}});
+$('ttl').oninput=e=>{const sl=cur();sl.t=e.target.value.trim()||sl.t0;document.querySelector(`.slot[data-i="${sl.i}"] .t b`).textContent=sl.t;$('ttlReset').disabled=sl.t===sl.t0;if(S.ov.back)renderStage()};
+$('ttl').onblur=()=>$('ttl').value=cur().t;
+$('ttlReset').onclick=()=>{const sl=cur();sl.t=sl.t0;document.querySelector(`.slot[data-i="${sl.i}"] .t b`).textContent=sl.t;renderStage();renderPanel()};
+$('lang').onchange=e=>{LANG=e.target.value;localStorage.setItem('haydamaka-postcard-lang',LANG);applyLang()};
+$('withBack').onchange=e=>S.withBack=e.target.checked;
+addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('dragging')});
+addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dragging')});
+addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');addFiles(e.dataTransfer.files)});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const sl=cur();
+if(e.key==='PageDown'){e.preventDefault();select(S.cur+1);return}if(e.key==='PageUp'){e.preventDefault();select(S.cur-1);return}
+if(!sl.img)return;const st=e.shiftKey?2:.5,mv={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
+if(mv){e.preventDefault();toMan(sl);sl.dx+=mv[0];sl.dy+=mv[1];update(sl)}else if(e.key==='+'||e.key==='='){toMan(sl);sl.s=Math.min(3,sl.s*1.02);update(sl)}else if(e.key==='-'){toMan(sl);sl.s=Math.max(.2,sl.s/1.02);update(sl)}});
+addEventListener('resize',renderStage);
+addEventListener('beforeunload',e=>{if(S.slots.some(s=>s.img)){e.preventDefault();e.returnValue=''}});
+function packbits(r,out){let i=0;const n=r.length;while(i<n){let j=i;while(j<n-1&&j-i<127&&r[j]===r[j+1])j++;
+if(j>i){out.push((257-(j-i+1))&255,r[i]);i=j+1}else{const s=i;while(i<n&&i-s<128&&!(i<n-1&&r[i]===r[i+1]))i++;out.push(i-s-1);for(let k=s;k<i;k++)out.push(r[k])}}}
+function tiff(cv){const d=cv.getContext('2d').getImageData(0,0,W,H).data,row=new Uint8Array(W*3),body=[];
+for(let y=0;y<H;y++){for(let x=0;x<W;x++){const s=(y*W+x)*4;row[x*3]=d[s];row[x*3+1]=d[s+1];row[x*3+2]=d[s+2]}packbits(row,body)}
+const tags=[[256,3,W],[257,3,H],[258,3,0,3],[259,3,32773],[262,3,2],[273,4,0],[277,3,3],[278,3,H],[279,4,body.length],[282,5,0],[283,5,0],[296,3,2]];
+const ifd=8,isz=2+tags.length*12+4,bps=ifd+isz,res=bps+6,dat=res+16,buf=new ArrayBuffer(dat+body.length),v=new DataView(buf);
+v.setUint16(0,0x4949,true);v.setUint16(2,42,true);v.setUint32(4,ifd,true);v.setUint16(ifd,tags.length,true);
+tags.forEach((t,i)=>{const o=ifd+2+i*12;let val=t[2];if(t[0]===258)val=bps;if(t[0]===273)val=dat;if(t[0]===282)val=res;if(t[0]===283)val=res+8;
+v.setUint16(o,t[0],true);v.setUint16(o+2,t[1],true);v.setUint32(o+4,t[3]||1,true);if(t[1]===3&&!t[3])v.setUint16(o+8,val,true);else v.setUint32(o+8,val,true)});
+for(let i=0;i<3;i++)v.setUint16(bps+i*2,8,true);[300,1,300,1].forEach((x,i)=>v.setUint32(res+i*4,x,true));
+const u=new Uint8Array(buf);u.set(body,dat);return new Blob([buf],{type:'image/tiff'})}
+const fname=(sl,side)=>`${pad(sl.i)} ${sl.t.replace(/[.,]/g,'')} - ${side}.tiff`;
+function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},3000)}
+function exportSlot(sl){const cv=document.createElement('canvas');cv.width=W;cv.height=H;drawFront(cv.getContext('2d'),sl,PXMM);save(tiff(cv),fname(sl,'front'));
+if(S.withBack){const b=document.createElement('canvas');b.width=W;b.height=H;drawBack(b.getContext('2d'),sl.t,PXMM);save(tiff(b),fname(sl,'back'))}}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+$('expOne').onclick=async()=>{const b=$('expOne');b.disabled=true;b.textContent=T('exporting');await wait(30);exportSlot(cur());b.textContent=T('expOne');b.disabled=false};
+$('expAll').onclick=async()=>{const list=S.slots.filter(s=>s.img),low=list.filter(s=>dpiOf(s)<300);
+if(low.length&&!confirm(T('confirmLow',low.length,low.map(s=>pad(s.i)).join(', '))))return;
+const b=$('expAll');b.disabled=true;for(let k=0;k<list.length;k++){b.textContent=T('exportingN',k+1,list.length);await wait(30);exportSlot(list[k]);await wait(700)}renderPanel();toast(T('exported',list.length,S.withBack))};
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4500)}
+document.fonts.load(`500 40px ${F}`,'ГАЙДАМАКА').then(()=>document.fonts.load(`italic 400 40px ${F}`,'«Щедрий» haydamaka')).finally(async()=>{buildList();applyLang();renderStage();renderPanel();
+try{const r=await fetch('assets/01 Багрянці.webp');if(r.ok){const b=await r.blob();await addFiles([new File([b],'01 Багрянці.webp',{type:'image/webp'})])}}catch(e){}});
+</script>
+</body>
+</html>

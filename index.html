@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- In Ukrainian, the default language; the app re-titles the page when the viewer picks another. -->
+    <title>Лицьовий бік листівок</title>
+    <!-- Linked, not imported from the script: the page never paints unstyled, in development either. -->
+    <link rel="stylesheet" href="./src/styles/index.css" />
+    <meta
+      name="description"
+      content="Розмістіть картини на листівках 109 × 152 мм і експортуйте файли TIFF 300 dpi для друку: лицьовий бік і зворот. Працює в браузері, файли не залишають ваш комп’ютер."
+    />
+    <link rel="canonical" href="https://postcards.haydamaka.com/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Link previews (Telegram, Facebook, X…). Crawlers don't run scripts or resolve relative URLs. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Гайдамака Оля" />
+    <meta property="og:title" content="Лицьовий бік листівок" />
+    <meta
+      property="og:description"
+      content="Розмістіть картини на листівках 109 × 152 мм і експортуйте файли TIFF 300 dpi для друку: лицьовий бік і зворот. Працює в браузері, файли не залишають ваш комп’ютер."
+    />
+    <meta property="og:url" content="https://postcards.haydamaka.com/" />
+    <meta property="og:image" content="https://postcards.haydamaka.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Лицьовий бік листівки з лініями вильоту, обрізу й безпечної зони, а за ним зворот" />
+    <meta property="og:locale" content="uk_UA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="pl_PL" />
+    <meta property="og:locale:alternate" content="de_DE" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <!-- Covers the page while it starts and restores the saved work, then fades out (src/ui/splash.ts). -->
+    <div id="splash">
+      <!-- Colours on the shapes themselves: a shape without one is drawn black. -->
+      <svg class="splash-card" width="109" height="152" viewBox="0 0 109 152" aria-hidden="true">
+        <rect width="109" height="152" fill="#fff" />
+        <rect class="pic" x="12" y="12" width="85" height="113" fill="#f3e3dc" />
+        <rect
+          class="trim"
+          x="2.5"
+          y="2.5"
+          width="104"
+          height="147"
+          fill="none"
+          stroke="#b2463a"
+          stroke-width="1"
+          stroke-dasharray="6 4"
+        />
+      </svg>
+      <p id="splashText" role="status"></p>
+      <div class="splash-bar"><span id="splashBar"></span></div>
+    </div>
+    <header inert>
+      <h1 data-i18n="h1">Postcard fronts</h1>
+      <span class="spec" id="spec">109 × 152 mm · 300 dpi · 1287 × 1795 px · RGB TIFF</span>
+      <label class="btn" for="files" data-i18n="add">Add pictures</label>
+      <input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,.tif,.tiff" multiple hidden />
+      <button id="expAll" class="pri" disabled>Export all</button>
+      <!-- Options come from src/i18n (LANG_NAMES), the website's seven languages. -->
+      <select id="lang" aria-label="Language"></select>
+    </header>
+    <main inert>
+      <nav id="list" aria-label="Cards">
+        <div id="rows"></div>
+        <div id="listFoot" hidden><button id="clearAll" data-i18n="clearAll">Clear list</button></div>
+      </nav>
+      <section id="stage" class="none">
+        <!-- The view scrolls once zoomed in; the zoom controls float in its corner. -->
+        <div id="viewport">
+          <div id="view">
+            <div id="cards">
+              <div class="cw">
+                <span id="frontCap" data-i18n="front">Front</span>
+                <div id="fw"><canvas id="ghost"></canvas><canvas id="front"></canvas></div>
+              </div>
+              <div class="cw" id="backW" hidden>
+                <span data-i18n="back">Back</span>
+                <canvas id="back"></canvas>
+              </div>
+            </div>
+          </div>
+          <div id="zoom" role="group" data-i18n-label="zoom">
+            <button id="zOut" data-i18n-title="zoomOut" data-i18n-label="zoomOut">−</button>
+            <output id="zVal" data-i18n-title="zoomTip">100%</output>
+            <button id="zIn" data-i18n-title="zoomIn" data-i18n-label="zoomIn">+</button>
+            <button id="zFit" data-i18n="zoomFit" data-i18n-title="zoomFitTip">Fit</button>
+          </div>
+        </div>
+        <div id="hint" data-i18n="hint"></div>
+        <div id="drop">
+          <b data-i18n="dropT">Drop pictures here</b>
+          <span class="muted" data-i18n="dropFmt"></span>
+          <span class="muted" data-i18n="dropLocal"></span>
+        </div>
+      </section>
+      <!-- Sections fold; `open` marks the ones open by default (src/ui/sections.ts remembers the viewer's choice). -->
+      <aside id="panel">
+        <details class="sec" id="secTitle">
+          <summary><h3 data-i18n="sTitle">Title</h3></summary>
+          <div class="body">
+            <input type="text" id="ttl" spellcheck="false" />
+            <div class="btns"><button id="ttlReset" data-i18n="ttlReset">Reset to original</button></div>
+          </div>
+        </details>
+        <details class="sec" id="secPicture" open>
+          <summary><h3 data-i18n="sPic">Picture</h3></summary>
+          <div class="body">
+            <div class="fname" id="pName">—</div>
+            <div class="muted" id="pPx"></div>
+            <div class="btns">
+              <label class="btn btn--grow" id="replaceBtn" for="one" data-i18n="replace">Replace</label>
+              <input id="one" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,.tif,.tiff" hidden />
+              <button id="rm" data-i18n="remove">Remove</button>
+            </div>
+          </div>
+        </details>
+        <details class="sec" id="secPlacement">
+          <summary><h3 data-i18n="sPlace">Placement</h3></summary>
+          <div class="body">
+            <div class="seg">
+              <button id="mAuto" data-i18n="auto" data-i18n-title="autoTip">Auto-fit</button>
+              <button id="mMan" data-i18n="manual" data-i18n-title="manTip">Manual</button>
+            </div>
+            <div class="row">
+              <label data-i18n="scale" for="sc">Scale</label>
+              <input type="range" id="sc" min="20" max="300" step="1" />
+              <span id="scV">100%</span>
+            </div>
+            <div class="row"><label data-i18n="dx" for="dx">X offset, mm</label><input type="number" id="dx" step="0.5" /></div>
+            <div class="row"><label data-i18n="dy" for="dy">Y offset, mm</label><input type="number" id="dy" step="0.5" /></div>
+            <div class="btns">
+              <button id="center" data-i18n="center">Centre</button>
+              <button id="reset" data-i18n="reset">Reset to auto</button>
+            </div>
+          </div>
+        </details>
+        <details class="sec" id="secResolution" open>
+          <summary>
+            <h3><span data-i18n="sRes">Resolution</span><span class="info" tabindex="0" data-i18n-tip="resTip">i</span></h3>
+          </summary>
+          <div class="body">
+            <div class="row"><span class="big" id="dpi">—</span><span class="st" id="dpiSt"></span></div>
+            <div class="muted" id="placed"></div>
+          </div>
+        </details>
+        <details class="sec" id="secCard">
+          <summary><h3 data-i18n="sCard">Card · all slots</h3></summary>
+          <div class="body">
+            <div class="row">
+              <label data-i18n="fitTo">Auto-fit to</label><span class="info" tabindex="0" data-i18n-tip="fitTip">i</span>
+            </div>
+            <div class="seg seg--stack">
+              <button id="fTrim" data-i18n="fitTrim">Fill card</button>
+              <button id="fMargin" data-i18n="fitMargin">Side margins</button>
+              <button id="fFrame" data-i18n="fitFrame">Top &amp; side margins</button>
+            </div>
+            <div class="row">
+              <label data-i18n="margin" for="mg">Side margin, mm</label>
+              <span class="info" tabindex="0" data-i18n-tip="marginTip">i</span>
+              <input type="number" id="mg" min="0" max="30" step="0.5" />
+            </div>
+            <div class="row">
+              <label data-i18n="bleed" for="bl">Bleed, mm</label>
+              <span class="info" tabindex="0" data-i18n-tip="bleedTip">i</span>
+              <input type="number" id="bl" min="0" max="5" step="0.5" />
+            </div>
+            <div class="muted" id="trimNote"></div>
+          </div>
+        </details>
+        <details class="sec" id="secBack">
+          <summary><h3 data-i18n="sBack">Back · all slots</h3></summary>
+          <div class="body">
+            <label class="field"
+              ><span data-i18n="artist">Artist</span><input type="text" id="artist" spellcheck="false"
+            /></label>
+            <label class="field"
+              ><span data-i18n="website">Website</span><input type="text" id="website" spellcheck="false"
+            /></label>
+            <div class="muted" data-i18n="backNote"></div>
+          </div>
+        </details>
+        <details class="sec" id="secShow">
+          <summary><h3 data-i18n="sShow">Show</h3></summary>
+          <div class="body">
+            <label class="chk"
+              ><input type="checkbox" id="oBleed" /><span data-i18n="oBleed">Bleed area</span
+              ><span class="info" tabindex="0" data-i18n-tip="oBleedTip">i</span></label
+            >
+            <label class="chk"
+              ><input type="checkbox" id="oTrim" /><span data-i18n="oTrim">Trim line</span
+              ><span class="info" tabindex="0" data-i18n-tip="oTrimTip">i</span></label
+            >
+            <label class="chk"
+              ><input type="checkbox" id="oSafe" /><span data-i18n="oSafe">Safe zone &amp; margins</span
+              ><span class="info" tabindex="0" data-i18n-tip="oSafeTip">i</span></label
+            >
+            <label class="chk"
+              ><input type="checkbox" id="oBack" /><span data-i18n="oBack">Back side by side</span
+              ><span class="info" tabindex="0" data-i18n-tip="oBackTip">i</span></label
+            >
+          </div>
+        </details>
+        <details class="sec" id="secExport" open>
+          <summary><h3 data-i18n="sExp">Export</h3></summary>
+          <div class="body">
+            <button id="expOne" class="pri" data-i18n="expOne" disabled>Export this card</button>
+            <label class="chk"
+              ><input type="checkbox" id="withBack" checked /><span data-i18n="withBack">Also export backs</span></label
+            >
+            <div class="muted" data-i18n="filesNote"></div>
+          </div>
+        </details>
+      </aside>
+    </main>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
