@@ -63,6 +63,14 @@ export async function addGeneratedImages(page: Page, specs: ImageSpec[]): Promis
 
 export const toast = (page: Page) => page.locator('#toast');
 
+/**
+ * The names a download may be saved under. WebKit's Linux build (the one CI runs) saves the page's `download` name
+ * with its spaces turned into underscores; Chromium, and WebKit on Windows, keep the name the page asked for. So the
+ * exact name is checked in Chromium.
+ */
+export const savedNames = (name: string, browserName: string): string[] =>
+  browserName === 'webkit' ? [name, name.replaceAll(' ', '_')] : [name];
+
 /** Collects the next `n` downloads. */
 export async function nextDownloads(page: Page, n: number, action: () => Promise<void>): Promise<Download[]> {
   const got: Download[] = [];

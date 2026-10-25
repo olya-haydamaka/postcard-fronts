@@ -7,6 +7,7 @@ import {
   expectColor,
   nextDownloads,
   pixel,
+  savedNames,
   tiffFixture,
   toast,
   twoTone,
@@ -235,7 +236,10 @@ test('TIFF input: Deflate, LZW and PackBits load in the built app', async ({ pag
   for (const st of await page.locator('.slot .st').all()) await expect(st).toContainText('dpi');
 });
 
-test('export: front and back TIFFs at 1287 × 1795 px, 300 dpi, no overlays (acceptance #4) @smoke', async ({ page }) => {
+test('export: front and back TIFFs at 1287 × 1795 px, 300 dpi, no overlays (acceptance #4) @smoke', async ({
+  page,
+  browserName,
+}) => {
   // Taller than the 2400 px preview limit, so the preview downscale path runs in every engine.
   await addGeneratedImages(page, [{ name: '01 test.png', w: 1950, h: 2600, color: '#3366cc', type: 'image/png' }]);
   await expect(toast(page)).toHaveText('Додано: 1');
@@ -244,8 +248,8 @@ test('export: front and back TIFFs at 1287 × 1795 px, 300 dpi, no overlays (acc
   await expect(page.locator('#placed')).toHaveText('Розмір 89.0 × 118.7 мм');
 
   const [front, back] = await nextDownloads(page, 2, () => page.click('#expOne'));
-  expect(front.suggestedFilename()).toBe('01 test - front.tiff');
-  expect(back.suggestedFilename()).toBe('01 test - back.tiff');
+  expect(savedNames('01 test - front.tiff', browserName)).toContain(front.suggestedFilename());
+  expect(savedNames('01 test - back.tiff', browserName)).toContain(back.suggestedFilename());
 
   const f = await decodeDownload(front);
   expect([f.w, f.h]).toEqual([1287, 1795]);
