@@ -1,6 +1,6 @@
 {
   "name": "postcard-fronts",
-  "version": "26.10.4",
+  "version": "26.10.5",
   "private": true,
   "description": "Browser-only tool that fits paintings onto postcard fronts and exports print-ready 300 dpi TIFF files (fronts and backs). Nothing leaves your computer.",
   "license": "MIT",
@@ -47,6 +47,6 @@
     "typescript-eslint": "8.71.2",
     "vite": "8.3.4",
     "vitest": "5.0.5",
-    "wrangler": "4.151.1"
+    "wrangler": "4.153.0"
   }
 }
