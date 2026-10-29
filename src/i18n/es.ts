@@ -90,4 +90,5 @@ export const es: Dict = {
   restored: (n) => `Recuperadas de la última vez: ${n}`,
   restoring: (done, total) => `Recuperando tu trabajo: ${done} de ${total}`,
   notSaved: 'No queda espacio en el navegador para estas imágenes: al recargar desaparecerán.',
+  source: 'Código fuente en GitHub',
 };

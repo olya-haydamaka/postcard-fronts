@@ -88,6 +88,7 @@ export const en = {
   restored: (n: number) => `Back from last time: ${n}`,
   restoring: (done: number, total: number) => `Restoring your work: ${done} of ${total}`,
   notSaved: 'No room in the browser to keep these pictures: they will be gone after a reload.',
+  source: 'Source code on GitHub',
 };
 
 /** Every language must define every key with the same shape. */

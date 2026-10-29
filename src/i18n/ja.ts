@@ -89,4 +89,5 @@ export const ja: Dict = {
   restored: (n) => `前回の作業を復元：${n}`,
   restoring: (done, total) => `作業を復元中：${done} / ${total}`,
   notSaved: 'ブラウザーにこれらの画像を保存する空きがありません。再読み込みすると消えます。',
+  source: 'GitHub のソースコード',
 };

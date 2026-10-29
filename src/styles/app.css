@@ -49,6 +49,16 @@ h1 {
   min-width: 200px;
 }
 
+/* The GitHub mark, last in the header: the colour of the controls beside it, terracotta like a link on hover. */
+#source {
+  display: flex;
+  color: var(--dark);
+}
+#source:hover,
+#source:focus-visible {
+  color: var(--terra);
+}
+
 /* Controls */
 
 button,

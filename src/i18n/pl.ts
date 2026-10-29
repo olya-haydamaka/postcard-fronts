@@ -90,4 +90,5 @@ export const pl: Dict = {
   restored: (n) => `Przywrócono z ostatniego razu: ${n}`,
   restoring: (done, total) => `Przywracam pracę: ${done} z ${total}`,
   notSaved: 'W przeglądarce brak miejsca na te obrazy: po odświeżeniu strony znikną.',
+  source: 'Kod źródłowy na GitHubie',
 };

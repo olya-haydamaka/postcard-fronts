@@ -90,4 +90,5 @@ export const de: Dict = {
   restored: (n) => `Vom letzten Mal wiederhergestellt: ${n}`,
   restoring: (done, total) => `Arbeit wird wiederhergestellt: ${done} von ${total}`,
   notSaved: 'Im Browser ist kein Platz für diese Bilder: Nach dem Neuladen sind sie weg.',
+  source: 'Quellcode auf GitHub',
 };

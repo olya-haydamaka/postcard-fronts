@@ -90,4 +90,5 @@ export const uk: Dict = {
   restored: (n) => `Відновлено з минулого разу: ${n}`,
   restoring: (done, total) => `Відновлюю роботу: ${done} з ${total}`,
   notSaved: 'У браузері немає місця для цих картин: після перезавантаження їх не буде.',
+  source: 'Вихідний код на GitHub',
 };

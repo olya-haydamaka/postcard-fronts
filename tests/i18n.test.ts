@@ -15,7 +15,8 @@ const proto = evalPrototype<{ en: Table; uk: Table }>(
  * Where the copy deliberately differs from the prototype (changelog/001): cards come from the files, so the
  * empty-slot and title-matching copy went; the back's name and website became editable; a third auto-fit mode, Top
  * & side margins, joined the two (its button, and a sentence in the auto-fit tooltip); the view zoom has controls;
- * the work is kept in the browser, with a button to clear the list and a splash screen while it comes back.
+ * the work is kept in the browser, with a button to clear the list and a splash screen while it comes back. The
+ * header links to the source code (changelog/003).
  */
 const ADDED = [
   'added',
@@ -28,6 +29,7 @@ const ADDED = [
   'restoring',
   'fitFrame',
   'sBack',
+  'source',
   'website',
   'zoom',
   'zoomFit',

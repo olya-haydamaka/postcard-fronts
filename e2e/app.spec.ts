@@ -114,6 +114,9 @@ test("offers the website's seven languages; each labels the whole page and fits 
     await expect(page.locator('html')).toHaveAttribute('lang', code);
     await expect(page).toHaveTitle(dict.h1);
     await expect(page.locator('#expOne')).toHaveText(dict.expOne);
+    // The source link shows only the GitHub mark: its name and tooltip follow the language.
+    await expect(page.locator('#source')).toHaveAttribute('aria-label', dict.source);
+    await expect(page.locator('#source')).toHaveAttribute('title', dict.source);
     const blank = await page
       .locator('[data-i18n]')
       .evaluateAll((es) => es.filter((e) => !e.textContent?.trim()).map((e) => (e as HTMLElement).dataset.i18n));

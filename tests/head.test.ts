@@ -85,3 +85,16 @@ describe('the first paint', () => {
     expect(body).toMatch(/<main inert>/);
   });
 });
+
+describe('the header', () => {
+  it('links to the source code: the repository package.json names, in a new tab', () => {
+    const pkg = JSON.parse(read('package.json').toString('utf8')) as { repository: { url: string } };
+    const repo = pkg.repository.url.replace(/^git\+/, '').replace(/\.git$/, '');
+    const link = html.match(/<a id="source"[^>]*>/)?.[0] ?? '';
+    expect(link).toContain(`href="${repo}"`);
+    expect(link).toContain('target="_blank"');
+    expect(link).toContain('rel="noopener"');
+    // Only the mark shows, so the link's name comes from the dictionary.
+    expect(link).toContain('data-i18n-label="source"');
+  });
+});

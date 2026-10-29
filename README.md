@@ -128,6 +128,8 @@ changelog/       one entry per commit: what changed and why
 - **Another language:** add a dictionary next to [`src/i18n/uk.ts`](src/i18n/uk.ts) and register it, with its
   name, in `src/i18n/index.ts`; the language menu is built from that list. Add its `og:locale:alternate` to
   `index.html` (a test checks the two agree).
+- **The source link:** the GitHub mark at the end of the header links to this repository. Point it at your fork in
+  `index.html`, and `repository` in `package.json` with it (a test checks the two agree).
 - **Link previews:** `index.html` carries the title, description and preview image that search results and
   messengers show, in Ukrainian. Change them there, and the domain in `wrangler.jsonc` with them. The image,
   `public/og.png`, is drawn by `node scripts/og-image.mjs`; run it again after changing its copy.
@@ -146,12 +148,23 @@ the tested build only from `main`, when the pushed head commit's message contain
 
 One-time setup (Cloudflare dashboard, then GitHub):
 
-1. Create an API token from the **Edit Cloudflare Workers** template, scoped to the account and the zone that holds
-   the domain. The custom-domain route is applied on every deploy, so the token keeps those rights. If attaching
-   the domain is refused, add **Zone → DNS → Edit**.
+1. Create an API token with two policies:
+   - on the **account**: **Workers Scripts → Edit** and **Account Settings → Read**. Workers belong to the account:
+     the same policy on a zone is refused with "No access to the specified resource";
+   - on the **zone** that holds the domain: **Workers Routes → Edit**.
+
+   The custom-domain route is applied on every deploy, so the token keeps those rights. The **Edit Cloudflare
+   Workers** template works too, once its Workers policy is on the account.
 2. Add repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 3. Make sure no DNS record exists yet for the hostname. Cloudflare creates it, and the certificate, on first deploy.
-4. Keep Rocket Loader and automatic Web Analytics injection off for the zone; both would break the CSP.
+4. Keep the zone's own scripts off the page. The CSP blocks them and each visit would log an error:
+   - **Rocket Loader:** off.
+   - **Web Analytics:** on by default in a proxied zone. Add a **Configuration Rule** for the hostname with
+     **Disable Real User Monitoring (RUM)**.
+5. Redirect plain HTTP to HTTPS. **Always Use HTTPS** (SSL/TLS → Edge Certificates) does it for the whole zone. A
+   **Redirect Rule** does it for the hostname alone: `http.host eq "<hostname>" and not ssl`, to
+   `concat("https://", http.host, http.request.uri.path)`, 301, query string kept. From its first HTTPS answer the
+   site asks browsers to stay on HTTPS (`Strict-Transport-Security` in `public/_headers`).
 
 ## Credits
 
@@ -159,6 +172,7 @@ One-time setup (Cloudflare dashboard, then GitHub):
 - [UTIF.js](https://github.com/photopea/UTIF.js) (MIT) and [pako](https://github.com/nodeca/pako) (MIT and Zlib)
   for TIFF input.
 - Fonts: Cormorant Garamond and JetBrains Mono (SIL Open Font License), via [Fontsource](https://fontsource.org).
+- The GitHub mark: [Octicons](https://github.com/primer/octicons) (MIT).
 
 ## License
 
