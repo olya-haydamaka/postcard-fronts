@@ -10,7 +10,8 @@ Content-Security-Policy. Your work is kept in the browser's own storage on this 
 loses nothing; **Clear list** removes it.
 
 Live at **[postcards.haydamaka.com](https://postcards.haydamaka.com)**. Made for the artist
-[Olya Haydamaka](https://haydamaka.com): the back starts with her name and website, and anyone can type their own.
+[Olya Haydamaka](https://haydamaka.com). The back starts with placeholders, ARTIST NAME and example.com: type your
+own under **Back**.
 
 ## Output
 

@@ -595,8 +595,9 @@ test('title edits rename the card and the export file; Reset brings back the fil
 
 test("the back's name and website: edited, remembered in the browser, an empty field left off", async ({ page }) => {
   await openSection(page, 'secBack');
-  await expect(page.locator('#artist')).toHaveValue('ГАЙДАМАКА ОЛЯ');
-  await expect(page.locator('#website')).toHaveValue('haydamaka.com');
+  // Placeholders until someone types their own: no real artist's name or website.
+  await expect(page.locator('#artist')).toHaveValue('ARTIST NAME');
+  await expect(page.locator('#website')).toHaveValue('example.com');
   await page.fill('#artist', 'MARIA KOWALSKA');
   await page.fill('#website', '');
 

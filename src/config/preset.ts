@@ -22,7 +22,8 @@ export interface Preset {
 export const HAYDAMAKA: Preset = {
   id: 'haydamaka',
   format: POSTCARD_109x152,
-  back: { artist: 'ГАЙДАМАКА ОЛЯ', website: 'haydamaka.com' },
+  // Placeholders, for anyone to replace with their own under «Back» (example.com is reserved for examples, RFC 2606).
+  back: { artist: 'ARTIST NAME', website: 'example.com' },
   frameMm: 10,
 };
 
