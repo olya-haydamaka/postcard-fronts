@@ -18,7 +18,8 @@ const proto = evalPrototype<{ en: Table; uk: Table }>(
  * the work is kept in the browser, with a button to clear the list and a splash screen while it comes back. The
  * header links to the source code (changelog/003). An empty list says where the cards come from (the handoff's
  * copy, not in its prototype), and the panel's hint shows only while there are no cards, so it speaks of pictures,
- * not of "this slot" (changelog/007).
+ * not of "this slot" (changelog/007). The tool's Ukrainian name is «Листівки», as on the organisation's site
+ * (changelog/008).
  */
 const ADDED = [
   'added',
@@ -41,7 +42,7 @@ const ADDED = [
   'zoomOut',
   'zoomTip',
 ];
-const CHANGED = ['dropFmt', 'fitTip', 'noPicHint'];
+const CHANGED = ['dropFmt', 'fitTip', 'h1', 'noPicHint'];
 const DROPPED = ['matched', 'noPic', 'noPicSlot'];
 
 /** Sample arguments for every function entry; several cases where the copy branches. */

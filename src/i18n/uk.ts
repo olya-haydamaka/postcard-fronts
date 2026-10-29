@@ -1,7 +1,7 @@
 import type { Dict } from './en';
 
 export const uk: Dict = {
-  h1: 'Лицьовий бік листівок',
+  h1: 'Листівки',
   add: 'Додати картини',
   expAll: (n) => `Експортувати все (${n})`,
   front: 'Лицьовий бік',

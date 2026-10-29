@@ -86,7 +86,7 @@ const NAME_BOX = [118, 118, 700, 260] as const;
 const SITE_BOX = [118, 1630, 700, 1690] as const;
 
 test('opens in Ukrainian; English persists across reloads (acceptance #8) @smoke', async ({ page }) => {
-  await expect(page.locator('h1')).toHaveText('Лицьовий бік листівок');
+  await expect(page.locator('h1')).toHaveText('Листівки');
   await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
   await expect(page.locator('#expOne')).toHaveText('Експортувати цю листівку');
   await page.selectOption('#lang', 'en');

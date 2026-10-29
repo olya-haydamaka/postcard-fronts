@@ -61,15 +61,15 @@ h1 { font: 500 84px/0.98 'Cormorant Garamond', serif; letter-spacing: -0.01em; }
 .safe { position: absolute; inset: ${mm(7)}; border: 2px dotted rgba(248, 245, 240, 0.85); }
 </style></head><body>
 <div class="copy">
-  <h1>Лицьовий бік<br>листівок</h1>
+  <h1>Листівки</h1>
   <div class="spec">109 × 152 мм · 300 dpi · RGB TIFF<br>лицьовий бік і зворот</div>
   <div class="local">Файли не залишають ваш комп’ютер.</div>
 </div>
 <div class="url">postcards.haydamaka.com</div>
 <div class="card back">
-  <div class="name">ГАЙДАМАКА ОЛЯ</div>
+  <div class="name">ARTIST NAME</div>
   <div class="title">«Назва листівки»</div>
-  <div class="site">haydamaka.com</div>
+  <div class="site">example.com</div>
 </div>
 <div class="card front">
   <div class="pic"></div><div class="sun"></div>
