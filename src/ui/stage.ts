@@ -64,12 +64,34 @@ function renderZoom(): void {
   view.classList.toggle('pan', view.scrollWidth > view.clientWidth + 1 || view.scrollHeight > view.clientHeight + 1);
 }
 
+/**
+ * No cards yet: a blank card with its bleed and trim, the drop zone's words and the sample button on it. Sized like
+ * the prototype's: the largest that fits the stage with 40 px around, between 1.6 and 4.2 px per mm.
+ */
+function drawEmptyCard(): void {
+  const stage = byId('stage');
+  const fit = Math.min((stage.clientWidth - 80) / f.widthMm, (stage.clientHeight - 80) / f.heightMm);
+  const k = Math.max(1.6, Math.min(fit, 4.2));
+  const c = sizeCanvas(byId<HTMLCanvasElement>('emptyCard'), f.widthMm, f.heightMm, k);
+  c.fillStyle = '#fff';
+  c.fillRect(0, 0, f.widthMm * k, f.heightMm * k);
+  // Whatever the Show switches say: the empty card shows what bleed and trim mean.
+  drawOverlays(c, k, f, {
+    bleed: S.bleed,
+    margin: marginLine(),
+    ov: { bleed: true, trim: true, safe: false, back: false },
+    snap: null,
+  });
+}
+
 export function renderStage(): void {
   const sl = S.cur;
   const stage = byId('stage');
-  // No cards yet: the drop zone fills the stage.
   stage.classList.toggle('none', !sl);
-  if (!sl) return;
+  if (!sl) {
+    drawEmptyCard();
+    return;
+  }
   // Measured on the view's frame, which never has scrollbars, so 100 % stays the same size once zoomed in.
   const frame = byId('viewport');
   const pad = getComputedStyle(byId('view'));

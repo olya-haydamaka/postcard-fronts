@@ -69,7 +69,7 @@ export const pl: Dict = {
   sExp: 'Eksport',
   expOne: 'Eksportuj tę pocztówkę',
   withBack: 'Eksportuj też rewersy',
-  filesNote: 'Pliki: „01 Багрянці - front.tiff”, „01 Багрянці - back.tiff”.',
+  filesNote: (f, withBack) => (withBack ? `Pliki: „${f} - front.tiff”, „${f} - back.tiff”.` : `Plik: „${f} - front.tiff”.`),
   low: 'niska',
   tooLow: 'za niska',
   good: 'Dobra do druku',
@@ -91,4 +91,9 @@ export const pl: Dict = {
   restoring: (done, total) => `Przywracam pracę: ${done} z ${total}`,
   notSaved: 'W przeglądarce brak miejsca na te obrazy: po odświeżeniu strony znikną.',
   source: 'Kod źródłowy na GitHubie',
+  sample: 'Wypróbuj na przykładzie',
+  sampleTag: 'Przykład',
+  sampleSkip: 'Przykład nie trafia do „Eksportuj wszystko”. Upuść na niego swój obraz, aby go zastąpić.',
+  noPicHint: 'Dodaj obrazy, aby je rozmieścić i wyeksportować.',
+  listEmpty: 'Pocztówki pojawią się tu po dodaniu obrazów',
 };

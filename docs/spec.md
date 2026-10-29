@@ -60,6 +60,19 @@ A single screen. Header, then three columns: slot list 260 px · stage 1fr · pa
 
 **Toast**: fixed at bottom centre, background #2B241D, white mono 11.5 px, hides after 4.5 s.
 
+## First-run / empty state
+- **Empty card:** when no picture is loaded, the stage shows a blank white 109 × 152 card (same shadow as the real card, max 4.2 px/mm) with the bleed tint and the dashed trim line drawn on it. Inside the card, centred: "Drop pictures here" (Cormorant 26 px), the formats line, a **"Try with a sample"** button, and "Nothing leaves your computer." While files are dragged over the window, the stage gets a terracotta dashed outline.
+- **Sample:** the button loads `assets/01 Багрянці.webp` into the first slot with `sample: true`. It is not preloaded automatically.
+  - The slot shows a small "Sample" tag (taupe bg, white 9.5 px caps) next to its status.
+  - The sample is excluded from Export all and from its count. "Export this card" still works, so the export can be tried.
+  - The Export note says: "The sample is not included in Export all. Drop your own picture to replace it."
+  - Any real file loaded into the slot (or Remove) clears the flag.
+- **Empty slot list** (live version, where slots come from files): show one muted line in the left column, "Cards appear here after you add pictures" / "Листівки з’являться тут після додавання картин", instead of leaving it blank.
+- **Panel:** Picture, Placement and Resolution are hidden while the current slot has no picture. Show the muted line "Add a picture to this slot to place and export it." above Title instead. Title, Card, Back, Show and Export always stay visible.
+- **Export note** is built from the current slot: "Files: “NN Title - front.tiff”, “NN Title - back.tiff”." When "Also export backs" is off, only the front file is listed. No hard-coded "Багрянці".
+
+This repository ships no painting, so the sample is a picture the tool draws itself, at the same 1920 × 2578 px (changelog/007).
+
 ## Geometry & behaviour
 All maths is in mm in card coordinates: (0,0) is the top-left of the 109 × 152 file.
 
@@ -145,7 +158,7 @@ In memory only.
 - No rounded corners (except the dots and the info circle). No gradients.
 
 ## Assets
-- `assets/01 Багрянці.webp` (1920 × 2578): a sample painting. The prototype preloads it into slot 01 as a demo. Make that a dev-only demo or drop it.
+- `assets/01 Багрянці.webp` (1920 × 2578): a sample painting. It is loaded only by the "Try with a sample" button. Ship it with the app. (Not shipped here: see First-run / empty state.)
 - Fonts: Google Fonts (Cormorant Garamond, JetBrains Mono).
 - Libraries: pako 2.1.0 and utif 3.1.0 (npm), used only for TIFF input.
 

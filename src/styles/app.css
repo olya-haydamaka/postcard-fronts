@@ -178,6 +178,11 @@ main {
 #listFoot[hidden] {
   display: none;
 }
+/* An empty list: one line saying where the cards come from. */
+#listEmpty {
+  margin: 0;
+  padding: 14px 12px;
+}
 #clearAll {
   width: 100%;
   padding: 7px 10px;
@@ -252,6 +257,15 @@ main {
 }
 .st.bad::before {
   background: var(--terra);
+}
+/* «Sample», after the sample card's status. */
+.sample-tag {
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--taupe);
+  padding: 1px 5px;
 }
 
 /* Stage */
@@ -362,7 +376,8 @@ main {
   cursor: default;
 }
 
-/* Drop zone: empty state, and an overlay while files are dragged over the window */
+/* Drop zone. With no cards it holds the empty card, its words and the sample button on it, and no frame of its own.
+   While files are dragged over the window it is outlined in terracotta; over cards, it shows the words alone. */
 
 #drop {
   position: absolute;
@@ -386,6 +401,42 @@ body.dragging #drop,
 #stage.none #drop {
   display: flex;
 }
+#stage.none #drop {
+  border-color: transparent;
+  background: none;
+}
+body.dragging #stage #drop {
+  border-color: var(--terra);
+  background: rgba(248, 245, 240, 0.92);
+}
+#ec {
+  position: relative;
+}
+#emptyCard {
+  display: block;
+  box-shadow: var(--card-shadow);
+}
+#ecTxt {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 13%;
+}
+#ecTxt button {
+  margin-top: 4px;
+}
+#stage:not(.none) #emptyCard,
+#stage:not(.none) #sample {
+  display: none;
+}
+#stage:not(.none) #ecTxt {
+  position: static;
+  padding: 0;
+}
 #stage.none #cards,
 #stage.none #zoom,
 #stage.none #hint {
@@ -393,6 +444,15 @@ body.dragging #drop,
 }
 
 /* Panel */
+
+/* No card yet: the line above Title saying why the picture's sections are missing. */
+#noPicHint {
+  margin: 0;
+  padding: 14px 16px 0;
+}
+#noPicHint[hidden] {
+  display: none;
+}
 
 #panel {
   overflow: auto;

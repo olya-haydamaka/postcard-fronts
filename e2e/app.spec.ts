@@ -129,6 +129,9 @@ test("offers the website's seven languages; each labels the whole page and fits 
 });
 
 test('every info tooltip opens whole: inside the panel, which clips it, and under its icon', async ({ page }) => {
+  // A card, so the picture's own sections (Resolution has a tooltip) are there to open.
+  await addGeneratedImages(page, [{ name: '01 Багрянці.jpg', w: 600, h: 800, color: '#b5533a' }]);
+  await expect(page.locator('.slot')).toHaveCount(1);
   for (const id of SECTIONS) await openSection(page, id);
   const icons = page.locator('#panel .info');
   const n = await icons.count();
@@ -165,11 +168,30 @@ test('every info tooltip opens whole: inside the panel, which clips it, and unde
   }
 });
 
-test('starts empty: no cards, the drop zone, nothing to export; only Picture, Resolution, Export open @smoke', async ({
+test('starts empty: the empty card with the sample button, a line in the list, no picture sections @smoke', async ({
   page,
 }) => {
   await expect(page.locator('.slot')).toHaveCount(0);
   await expect(page.locator('#drop')).toBeVisible();
+  await expect(page.locator('#emptyCard')).toBeVisible();
+  await expect(page.locator('#ecTxt b')).toHaveText('Перетягніть картини сюди');
+  await expect(page.locator('#sample')).toHaveText('Спробувати на прикладі');
+  await expect(page.locator('#listEmpty')).toHaveText('Листівки з’являться тут після додавання картин');
+  await expect(page.locator('#noPicHint')).toHaveText('Додайте картини, щоб розмістити й експортувати їх.');
+  for (const id of ['secPicture', 'secPlacement', 'secResolution']) await expect(page.locator(`#${id}`), id).toBeHidden();
+  for (const id of ['secTitle', 'secCard', 'secBack', 'secShow', 'secExport'])
+    await expect(page.locator(`#${id}`), id).toBeVisible();
+  await expect(page.locator('#expNote')).toHaveText('');
+  // A white card with the bleed tinted at its edge, whatever the Show switches say.
+  const [middle, edge] = await page.locator('#emptyCard').evaluate((cv) => {
+    const c = (cv as HTMLCanvasElement).getContext('2d')!;
+    const px = (x: number, y: number) => [...c.getImageData(x, y, 1, 1).data.slice(0, 3)];
+    const w = (cv as HTMLCanvasElement).width;
+    const h = (cv as HTMLCanvasElement).height;
+    return [px(w >> 1, h >> 1), px(w >> 1, 2)];
+  });
+  expect(middle).toEqual([255, 255, 255]);
+  expect(edge[0], 'the bleed tint').toBeGreaterThan(edge[2]);
   await expect(page.locator('#expAll')).toHaveText('Експортувати все (0)');
   await expect(page.locator('#expAll')).toBeDisabled();
   await expect(page.locator('#expOne')).toBeDisabled();
@@ -223,6 +245,76 @@ test('Remove takes the card off the list; the last one leaves the tool empty', a
   await expect(page.locator('.slot')).toHaveCount(0);
   await expect(page.locator('#drop')).toBeVisible();
   await expect(page.locator('#expAll')).toHaveText('Експортувати все (0)');
+});
+
+test('Try with a sample: card 01, tagged and left out of Export all; it exports; a real picture on it replaces it', async ({
+  page,
+}) => {
+  await page.click('#sample');
+  await expect(page.locator('.slot')).toHaveCount(1);
+  await expect(page.locator('.slot .t b')).toHaveText('Приклад');
+  await expect(page.locator('.slot .sample-tag')).toHaveText('Приклад');
+  await expect(page.locator('#listEmpty')).toBeHidden();
+  await expect(page.locator('#noPicHint')).toBeHidden();
+  await expect(page.locator('#secPicture')).toBeVisible();
+  // 1920 px wide over 113.2 mm: Fill card crops the drawn picture's sides, like the design's sample painting's.
+  await expect(page.locator('#dpi')).toHaveText('431');
+  await expect(page.locator('#expAll')).toHaveText('Експортувати все (0)');
+  await expect(page.locator('#expAll')).toBeDisabled();
+  await expect(page.locator('#expNote')).toHaveText(
+    'Приклад не входить у «Експортувати все». Перетягніть свою картину, щоб замінити його.',
+  );
+
+  const [front, back] = await nextDownloads(page, 2, () => page.click('#expOne'));
+  expect(front.suggestedFilename()).toBe('01 Приклад - front.tiff');
+  expect(back.suggestedFilename()).toBe('01 Приклад - back.tiff');
+  const f = await decodeDownload(front);
+  expect([f.w, f.h]).toEqual([1287, 1795]);
+  // The drawn landscape, not paper: a warm sky at the top, the dark front hill at the bottom.
+  const [r, , b] = pixel(f, 643, 30);
+  expect(r, 'warm sky').toBeGreaterThan(200);
+  expect(b, 'warm sky').toBeLessThan(200);
+  expect(pixel(f, 643, 1770)[0], 'dark hill').toBeLessThan(120);
+
+  // Over cards, a drag shows the drop zone's words alone: no empty card, no sample button.
+  await page.evaluate(() => document.body.classList.add('dragging'));
+  await expect(page.locator('#ecTxt b')).toBeVisible();
+  await expect(page.locator('#emptyCard')).toBeHidden();
+  await expect(page.locator('#sample')).toBeHidden();
+  await page.evaluate(() => document.body.classList.remove('dragging'));
+
+  // Your own pictures join it, and Export all counts them, never the sample. Kept in the browser like any card.
+  await addGeneratedImages(page, [{ name: '02 Ожина.jpg', w: 1500, h: 2000, color: '#557799' }]);
+  await expect(page.locator('#expAll')).toHaveText('Експортувати все (1)');
+  const all = await nextDownloads(page, 2, () => page.click('#expAll'));
+  expect(all.map((d) => d.suggestedFilename()).sort()).toEqual(['02 Ожина - back.tiff', '02 Ожина - front.tiff']);
+  await expect(toast(page)).toHaveText('Експортовано файлів: 1 лицьових + звороти');
+  await saved(page);
+  await page.reload();
+  await expect(page.locator('.slot')).toHaveCount(2);
+  await expect(page.locator('.slot .sample-tag')).toHaveCount(1);
+  await expect(page.locator('#expAll')).toHaveText('Експортувати все (1)');
+
+  // A real picture put on the sample replaces it: a card of its own, named after its file.
+  await page.click('.slot:has(.sample-tag)');
+  const rgb = twoTone(120, 160, [200, 40, 40], [40, 40, 200]);
+  await page.setInputFiles('#one', { name: '01 Тепло.tif', mimeType: 'image/tiff', buffer: tiffFixture(120, 160, rgb, 'packbits') });
+  await expect(page.locator('.slot .sample-tag')).toHaveCount(0);
+  expect(await rowTitles(page)).toEqual(['Тепло', 'Ожина']);
+  await expect(page.locator('.slot.cur .t b')).toHaveText('Тепло');
+  await expect(page.locator('#expAll')).toHaveText('Експортувати все (2)');
+});
+
+test("the export note names the current card's files, and only the front while backs are off", async ({ page }) => {
+  await addGeneratedImages(page, [{ name: '05 Сосна. Пісня гірського вітру.jpg', w: 1500, h: 2000, color: '#557799' }]);
+  await expect(page.locator('#expNote')).toHaveText(
+    'Файли: «05 Сосна Пісня гірського вітру - front.tiff», «05 Сосна Пісня гірського вітру - back.tiff».',
+  );
+  await page.uncheck('#withBack');
+  await expect(page.locator('#expNote')).toHaveText('Файл: «05 Сосна Пісня гірського вітру - front.tiff».');
+  await openSection(page, 'secTitle');
+  await page.fill('#ttl', 'Сосна');
+  await expect(page.locator('#expNote')).toHaveText('Файл: «05 Сосна - front.tiff».');
 });
 
 test('TIFF input: Deflate, LZW and PackBits load in the built app', async ({ page }) => {
@@ -627,6 +719,9 @@ test('the back side by side lines up with the front card', async ({ page }) => {
 });
 
 test('sections fold from their headings and stay as the viewer left them', async ({ page }) => {
+  // A card, so the picture's own sections are shown.
+  await addGeneratedImages(page, [{ name: '01 Багрянці.jpg', w: 600, h: 800, color: '#b5533a' }]);
+  await expect(page.locator('#secPicture')).toBeVisible();
   await page.click('#secPicture > summary');
   await page.click('#secCard > summary');
   // The info circle in a heading shows its tip; it doesn't fold the section.

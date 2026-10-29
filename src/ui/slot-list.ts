@@ -79,6 +79,8 @@ export function renderList(): void {
     rows.append(row ?? buildRow(sl));
     if (!row) renderThumb(sl);
   }
+  // An empty list says where the cards will come from.
+  byId('listEmpty').hidden = S.slots.length > 0;
   byId('listFoot').hidden = !S.slots.length;
   markCurrent();
 }
@@ -94,6 +96,12 @@ export function renderThumb(sl: Slot): void {
   const st = row.querySelector<HTMLElement>('.st')!;
   st.className = `st ${cls}`;
   st.textContent = text;
+  if (sl.sample) {
+    const tag = document.createElement('span');
+    tag.className = 'sample-tag';
+    tag.textContent = t('sampleTag');
+    st.append(tag);
+  }
 }
 
 export function renderSlotTitle(sl: Slot): void {

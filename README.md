@@ -28,6 +28,9 @@ own under **Back**.
    titled after its file name: `01 Багрянці.tiff` is card 01, «Багрянці». The leading number sets the order;
    pictures without one go last, in the order added. The same file name again replaces that card's picture, and so
    does a file dropped on a card's row or **Replace**.
+   To look around first, **Try with a sample** on the empty card loads a picture the tool draws itself. It is tagged
+   *Sample*, it can be placed and exported like any card, and **Export all** leaves it out. Put your own picture on
+   it (its row or **Replace**) to replace it, or remove it.
 2. **Auto-fit** places every picture. *Fill card* covers the card, anchored to the top (overflow is cropped at the
    bottom or the sides). *Side margins* fits the whole picture inside a white margin. *Top & side margins* leaves
    10 mm of white from the trim line at the top, left and right, and the bottom keeps whatever is left (at least
@@ -110,7 +113,7 @@ npm run build        # dist/
 ```
 src/config/      card format (mm, dpi, bleed) and the preset: the back's starting name and website
 src/geometry/    auto-fit, manual placement, snapping, stage scale (pure, unit-tested)
-src/render/      front, cropped-preview ghost, overlays (and their casings), back (option G)
+src/render/      front, cropped-preview ghost, overlays (and their casings), back (option G), the drawn sample
 src/io/          decoding (TIFF in a worker), title + number from file names, TIFF encoder, download
 src/i18n/        en.ts (the typed source) + uk, pl, de, ja, es, fr; the compiler enforces key parity
 src/state/       the cards and settings; saved.ts keeps the work in IndexedDB

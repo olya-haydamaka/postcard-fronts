@@ -114,8 +114,25 @@ describe('the work kept in the browser', () => {
       dy: -1.5,
       bw: 89,
       bh: 118.7,
+      sample: false,
     });
     expect(parseSavedCard(structuredClone(rec))).toEqual(rec);
+  });
+
+  it('the sample keeps its flag through storage; a card stored before the flag existed is a real picture', () => {
+    const { slot } = add('01 Приклад.jpg');
+    slot.sample = true;
+    expect(parseSavedCard(structuredClone(savedCard(slot)))).toMatchObject({ sample: true });
+    const older: Partial<ReturnType<typeof savedCard>> = savedCard(slot);
+    delete older.sample;
+    expect(parseSavedCard(older)).toMatchObject({ sample: false });
+  });
+
+  it('a real picture put on the sample card clears its flag', () => {
+    const { slot } = add('01 Приклад.jpg');
+    slot.sample = true;
+    setPicture(slot, new File([''], 'Ожина.jpg'), bitmap(), 1500, 2000);
+    expect(slot.sample).toBe(false);
   });
 
   it('anything else read back is not a card', () => {

@@ -16,7 +16,9 @@ const proto = evalPrototype<{ en: Table; uk: Table }>(
  * empty-slot and title-matching copy went; the back's name and website became editable; a third auto-fit mode, Top
  * & side margins, joined the two (its button, and a sentence in the auto-fit tooltip); the view zoom has controls;
  * the work is kept in the browser, with a button to clear the list and a splash screen while it comes back. The
- * header links to the source code (changelog/003).
+ * header links to the source code (changelog/003). An empty list says where the cards come from (the handoff's
+ * copy, not in its prototype), and the panel's hint shows only while there are no cards, so it speaks of pictures,
+ * not of "this slot" (changelog/007).
  */
 const ADDED = [
   'added',
@@ -24,6 +26,7 @@ const ADDED = [
   'backNote',
   'clearAll',
   'confirmClear',
+  'listEmpty',
   'notSaved',
   'restored',
   'restoring',
@@ -38,7 +41,7 @@ const ADDED = [
   'zoomOut',
   'zoomTip',
 ];
-const CHANGED = ['dropFmt', 'fitTip'];
+const CHANGED = ['dropFmt', 'fitTip', 'noPicHint'];
 const DROPPED = ['matched', 'noPic', 'noPicSlot'];
 
 /** Sample arguments for every function entry; several cases where the copy branches. */
@@ -53,6 +56,11 @@ const samples: Record<string, unknown[][]> = {
     [1, false],
   ],
   cantRead: [['01 Багрянці.tif']],
+  filesNote: [
+    ['01 Багрянці', true],
+    ['01 Багрянці', false],
+    ['Sunset', true],
+  ],
   confirmClear: [[15]],
   restored: [[15]],
   restoring: [[3, 15]],

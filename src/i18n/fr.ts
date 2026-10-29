@@ -67,7 +67,10 @@ export const fr: Dict = {
   sExp: 'Export',
   expOne: 'Exporter cette carte',
   withBack: 'Exporter aussi les versos',
-  filesNote: `Fichiers${NB}: «${NB}01 Багрянці - front.tiff${NB}», «${NB}01 Багрянці - back.tiff${NB}».`,
+  filesNote: (f, withBack) =>
+    withBack
+      ? `Fichiers${NB}: «${NB}${f} - front.tiff${NB}», «${NB}${f} - back.tiff${NB}».`
+      : `Fichier${NB}: «${NB}${f} - front.tiff${NB}».`,
   low: 'faible',
   tooLow: 'trop faible',
   good: 'Bonne pour l’impression',
@@ -90,4 +93,9 @@ export const fr: Dict = {
   restoring: (done, total) => `Restauration du travail${NB}: ${done} sur ${total}`,
   notSaved: `Plus de place dans le navigateur pour ces images${NB}: elles disparaîtront au rechargement.`,
   source: 'Code source sur GitHub',
+  sample: 'Essayer avec un exemple',
+  sampleTag: 'Exemple',
+  sampleSkip: `L’exemple n’est pas inclus dans «${NB}Tout exporter${NB}». Déposez-y votre propre image pour le remplacer.`,
+  noPicHint: 'Ajoutez des images pour les placer et les exporter.',
+  listEmpty: 'Les cartes apparaîtront ici une fois les images ajoutées',
 };

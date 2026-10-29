@@ -25,9 +25,13 @@ export const padNumber = (n: number): string => String(n).padStart(2, '0');
 /** How a card is named in messages: its number, or its title when it has none. */
 export const cardLabel = (num: number | null, title: string): string => (num === null ? title : padNumber(num));
 
+/** What the export files of a card start with: `01 Багрянці`, or `Багрянці` without a number. `.` and `,` removed. */
+export const exportBaseName = (num: number | null, title: string): string =>
+  `${num === null ? '' : `${padNumber(num)} `}${title.replace(/[.,]/g, '')}`;
+
 /**
  * `01 Багрянці - front.tiff`; without a number, `Багрянці - front.tiff`. `.` and `,` are removed from the title.
  * Independent of the UI language.
  */
 export const exportFileName = (num: number | null, title: string, side: 'front' | 'back'): string =>
-  `${num === null ? '' : `${padNumber(num)} `}${title.replace(/[.,]/g, '')} - ${side}.tiff`;
+  `${exportBaseName(num, title)} - ${side}.tiff`;

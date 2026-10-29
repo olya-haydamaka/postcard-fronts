@@ -1,6 +1,7 @@
 import { preset } from '../config/preset';
 import { isCropped, resetToAuto, toManual } from '../geometry/fit';
 import { t } from '../i18n';
+import { exportBaseName } from '../io/filename';
 import { busy, dpiOf, layout, marginLine, rectOf, S, saveBack, type Overlays, type Slot } from '../state/store';
 import { saveSoon } from './autosave';
 import { byId } from './dom';
@@ -17,6 +18,10 @@ function show(el: HTMLInputElement, value: string): void {
 
 export function renderPanel(): void {
   const sl = S.cur;
+
+  // No card yet: the picture's own sections wait, and a line above the rest says why.
+  for (const id of ['secPicture', 'secPlacement', 'secResolution']) byId(id).hidden = !sl;
+  byId('noPicHint').hidden = !!sl;
 
   const ttl = input('ttl');
   ttl.disabled = !sl;
@@ -73,8 +78,15 @@ export function renderPanel(): void {
   show(input('artist'), S.back.artist);
   show(input('website'), S.back.website);
 
+  // The files "Export this card" saves, named after the current card; the sample says it stays out of Export all.
+  byId('expNote').textContent = !sl
+    ? ''
+    : sl.sample
+      ? t('sampleSkip')
+      : t('filesNote', exportBaseName(sl.num, sl.t), S.withBack);
+
   if (!busy.exporting) {
-    const n = S.slots.length;
+    const n = S.slots.filter((s) => !s.sample).length;
     button('expAll').disabled = !n;
     button('expAll').textContent = t('expAll', n);
   }
@@ -181,7 +193,8 @@ export function bindPanel(h: PanelHandlers): void {
     if (!sl) return;
     sl.t = ttl.value.trim() || sl.t0;
     renderSlotTitle(sl);
-    button('ttlReset').disabled = sl.t === sl.t0;
+    // Reset's state and the export note's file names follow the title.
+    renderPanel();
     if (S.ov.back) h.renderStage();
     saveSoon();
   });
@@ -215,6 +228,7 @@ export function bindPanel(h: PanelHandlers): void {
   withBack.checked = S.withBack;
   withBack.addEventListener('change', () => {
     S.withBack = withBack.checked;
+    renderPanel();
     saveSoon();
   });
   button('expOne').addEventListener('click', () => h.exportOne());

@@ -68,7 +68,8 @@ export const ja: Dict = {
   sExp: '書き出し',
   expOne: 'このカードを書き出す',
   withBack: '裏面も書き出す',
-  filesNote: 'ファイル名：「01 Багрянці - front.tiff」「01 Багрянці - back.tiff」',
+  filesNote: (f, withBack) =>
+    withBack ? `ファイル名：「${f} - front.tiff」「${f} - back.tiff」` : `ファイル名：「${f} - front.tiff」`,
   low: '低い',
   tooLow: '低すぎる',
   good: '印刷に適しています',
@@ -90,4 +91,9 @@ export const ja: Dict = {
   restoring: (done, total) => `作業を復元中：${done} / ${total}`,
   notSaved: 'ブラウザーにこれらの画像を保存する空きがありません。再読み込みすると消えます。',
   source: 'GitHub のソースコード',
+  sample: 'サンプルで試す',
+  sampleTag: 'サンプル',
+  sampleSkip: 'サンプルは「すべて書き出す」に含まれません。自分の画像をドロップすると置き換わります。',
+  noPicHint: '画像を追加すると、配置と書き出しができます。',
+  listEmpty: '画像を追加すると、ここにカードが表示されます',
 };

@@ -67,7 +67,8 @@ export const en = {
   sExp: 'Export',
   expOne: 'Export this card',
   withBack: 'Also export backs',
-  filesNote: 'Files: “01 Багрянці - front.tiff”, “01 Багрянці - back.tiff”.',
+  filesNote: (f: string, withBack: boolean) =>
+    withBack ? `Files: “${f} - front.tiff”, “${f} - back.tiff”.` : `File: “${f} - front.tiff”.`,
   low: 'low',
   tooLow: 'too low',
   good: 'Good for print',
@@ -89,6 +90,11 @@ export const en = {
   restoring: (done: number, total: number) => `Restoring your work: ${done} of ${total}`,
   notSaved: 'No room in the browser to keep these pictures: they will be gone after a reload.',
   source: 'Source code on GitHub',
+  sample: 'Try with a sample',
+  sampleTag: 'Sample',
+  sampleSkip: 'The sample is not included in Export all. Drop your own picture to replace it.',
+  noPicHint: 'Add pictures to place and export them.',
+  listEmpty: 'Cards appear here after you add pictures',
 };
 
 /** Every language must define every key with the same shape. */

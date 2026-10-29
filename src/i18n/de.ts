@@ -69,7 +69,8 @@ export const de: Dict = {
   sExp: 'Export',
   expOne: 'Diese Karte exportieren',
   withBack: 'Rückseiten mitexportieren',
-  filesNote: 'Dateien: „01 Багрянці - front.tiff“, „01 Багрянці - back.tiff“.',
+  filesNote: (f, withBack) =>
+    withBack ? `Dateien: „${f} - front.tiff“, „${f} - back.tiff“.` : `Datei: „${f} - front.tiff“.`,
   low: 'niedrig',
   tooLow: 'zu niedrig',
   good: 'Gut für den Druck',
@@ -91,4 +92,9 @@ export const de: Dict = {
   restoring: (done, total) => `Arbeit wird wiederhergestellt: ${done} von ${total}`,
   notSaved: 'Im Browser ist kein Platz für diese Bilder: Nach dem Neuladen sind sie weg.',
   source: 'Quellcode auf GitHub',
+  sample: 'Mit einem Beispiel ausprobieren',
+  sampleTag: 'Beispiel',
+  sampleSkip: 'Das Beispiel ist bei „Alle exportieren“ nicht dabei. Leg dein eigenes Bild darauf, um es zu ersetzen.',
+  noPicHint: 'Füge Bilder hinzu, um sie zu platzieren und zu exportieren.',
+  listEmpty: 'Die Karten erscheinen hier, sobald du Bilder hinzufügst',
 };

@@ -41,7 +41,8 @@ main{display:grid;grid-template-columns:260px minmax(0,1fr) 280px;min-height:0}
 #fw{position:relative}#ghost{position:absolute;pointer-events:none;background:transparent!important;box-shadow:none!important}#front{position:relative;cursor:grab;touch-action:none}#front.drag{cursor:grabbing}#front.empty{cursor:default}
 #hint{font-size:10.5px;color:var(--taupe);text-align:center}
 #drop{position:absolute;inset:16px;border:1.5px dashed var(--taupe);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:rgba(248,245,240,.92);text-align:center;padding:20px;z-index:2}
-#drop b{font:500 26px/1.1 "Cormorant Garamond",serif;color:var(--ink)}
+#drop b{font:500 26px/1.1 "Cormorant Garamond",serif;color:var(--ink)}#ec{position:relative}#emptyCard{display:block;box-shadow:0 1px 2px rgba(60,40,20,.12),0 10px 30px rgba(60,40,20,.12)}#ecTxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:0 13%;text-align:center}#ecTxt button{margin-top:4px}#stage.none #drop{border-color:transparent;background:none}body.dragging #drop{border-color:var(--terra)!important;background:rgba(248,245,240,.92)!important}
+.sample-tag{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--taupe);padding:1px 5px}.sec.needPic.off{display:none}
 body.dragging #drop,#stage.none #drop{display:flex}
 #stage.none #cards,#stage.none #hint{visibility:hidden}
 #panel{overflow:auto;border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
@@ -73,19 +74,19 @@ input[type=range]{flex:1;accent-color:var(--dark)}
 <section id="stage" class="none" data-screen-label="Editor">
 <div id="cards"><div class="cw"><span data-i18n="front">Front</span><div id="fw"><canvas id="ghost"></canvas><canvas id="front"></canvas></div></div><div class="cw" id="backW" hidden><span data-i18n="back">Back</span><canvas id="back"></canvas></div></div>
 <div id="hint" data-i18n="hint">Drag to move (snaps to edges, trim, margins, centre; hold Alt to skip) · scroll or −/+ to scale · arrows nudge 0.5 mm (Shift 2 mm) · PgUp/PgDn switch card</div>
-<div id="drop"><b data-i18n="dropT">Drop pictures here</b><span class="muted" data-i18n="dropFmt">TIFF, JPG, PNG or WebP. Files are matched to titles by number (01…15) or name; the rest fill empty slots.</span><span class="muted" data-i18n="dropLocal">Nothing leaves your computer.</span></div>
+<div id="drop"><div id="ec"><canvas id="emptyCard"></canvas><div id="ecTxt"><b data-i18n="dropT">Drop pictures here</b><span class="muted" data-i18n="dropFmt"></span><button id="sample" data-i18n="sample">Try with a sample</button><span class="muted" data-i18n="dropLocal"></span></div></div></div>
 </section>
 <aside id="panel" data-screen-label="Panel">
-<div class="sec"><h3 data-i18n="sTitle">Title</h3><input type="text" id="ttl" spellcheck="false"><div class="btns"><button id="ttlReset" data-i18n="ttlReset">Reset to original</button></div></div>
-<div class="sec"><h3 data-i18n="sPic">Picture</h3><div class="fname" id="pName">—</div><div class="muted" id="pPx"></div><div class="btns"><label class="btn" for="one" style="flex:1;text-align:center" data-i18n="replace">Replace</label><input id="one" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,.tif,.tiff" hidden><button id="rm" data-i18n="remove">Remove</button></div></div>
-<div class="sec"><h3 data-i18n="sPlace">Placement</h3>
+<div class="sec"><div class="muted" id="noPicHint" data-i18n="noPicHint"></div><h3 data-i18n="sTitle">Title</h3><input type="text" id="ttl" spellcheck="false"><div class="btns"><button id="ttlReset" data-i18n="ttlReset">Reset to original</button></div></div>
+<div class="sec needPic"><h3 data-i18n="sPic">Picture</h3><div class="fname" id="pName">—</div><div class="muted" id="pPx"></div><div class="btns"><label class="btn" for="one" style="flex:1;text-align:center" data-i18n="replace">Replace</label><input id="one" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,.tif,.tiff" hidden><button id="rm" data-i18n="remove">Remove</button></div></div>
+<div class="sec needPic"><h3 data-i18n="sPlace">Placement</h3>
 <div class="seg"><button id="mAuto" data-i18n="auto" data-i18n-title="autoTip">Auto-fit</button><button id="mMan" data-i18n="manual" data-i18n-title="manTip">Manual</button></div>
 <div class="row"><label data-i18n="scale">Scale</label><input type="range" id="sc" min="20" max="300" step="1"><span id="scV" style="width:42px;text-align:right">100%</span></div>
 <div class="row"><label data-i18n="dx">X offset, mm</label><input type="number" id="dx" step="0.5"></div>
 <div class="row"><label data-i18n="dy">Y offset, mm</label><input type="number" id="dy" step="0.5"></div>
 <div class="btns"><button id="center" data-i18n="center">Centre</button><button id="reset" data-i18n="reset">Reset to auto</button></div>
 </div>
-<div class="sec"><h3><span data-i18n="sRes">Resolution</span><span class="info" tabindex="0" data-i18n-tip="resTip">i</span></h3><div class="row"><span class="big" id="dpi">—</span><span class="st" id="dpiSt"></span></div><div class="muted" id="placed"></div></div>
+<div class="sec needPic"><h3><span data-i18n="sRes">Resolution</span><span class="info" tabindex="0" data-i18n-tip="resTip">i</span></h3><div class="row"><span class="big" id="dpi">—</span><span class="st" id="dpiSt"></span></div><div class="muted" id="placed"></div></div>
 <div class="sec"><h3 data-i18n="sCard">Card · all slots</h3>
 <div class="row"><label data-i18n="fitTo">Auto-fit to</label><span class="info" tabindex="0" data-i18n-tip="fitTip"></span></div>
 <div class="seg"><button id="fTrim" data-i18n="fitTrim">Fill card</button><button id="fMargin" data-i18n="fitMargin">Side margins</button></div>
@@ -99,7 +100,7 @@ input[type=range]{flex:1;accent-color:var(--dark)}
 <label class="chk"><input type="checkbox" id="oSafe"><span data-i18n="oSafe">Safe zone &amp; margins</span><span class="info" tabindex="0" data-i18n-tip="oSafeTip">i</span></label>
 <label class="chk"><input type="checkbox" id="oBack"><span data-i18n="oBack">Back side by side</span><span class="info" tabindex="0" data-i18n-tip="oBackTip">i</span></label>
 </div>
-<div class="sec"><h3 data-i18n="sExp">Export</h3><button id="expOne" class="pri" disabled>Export this card</button><label class="chk"><input type="checkbox" id="withBack" checked><span data-i18n="withBack">Also export backs</span></label><div class="muted" data-i18n="filesNote">Files: “01 Багрянці - front.tiff”, “01 Багрянці - back.tiff”.</div></div>
+<div class="sec"><h3 data-i18n="sExp">Export</h3><button id="expOne" class="pri" disabled>Export this card</button><label class="chk"><input type="checkbox" id="withBack" checked><span data-i18n="withBack">Also export backs</span></label><div class="muted" id="expNote"></div></div>
 </aside>
 </main>
 <div id="toast"></div>
@@ -122,7 +123,7 @@ sShow:'Show',oBleed:'Bleed area',oBleedTip:'Tinted strip outside the trim line. 
 oTrim:'Trim line',oTrimTip:'Red dashed line where the studio cuts the card. The final card size is 105 × 148 mm. The cut can move about 1 mm either way.',
 oSafe:'Safe zone & margins',oSafeTip:'Dotted box 5 mm inside the trim: keep anything important, like the signature, inside it. The thin vertical lines show the side margin set in Card.',
 oBack:'Back side by side',oBackTip:'Shows the back of this card (option G with this title) next to the front, for a quick check of how the pair looks.',
-sExp:'Export',expOne:'Export this card',withBack:'Also export backs',filesNote:'Files: “01 Багрянці - front.tiff”, “01 Багрянці - back.tiff”.',
+sExp:'Export',expOne:'Export this card',withBack:'Also export backs',filesNote:(f,b)=>b?`Files: “${f} - front.tiff”, “${f} - back.tiff”.`:`File: “${f} - front.tiff”.`,sample:'Try with a sample',sampleTag:'Sample',sampleSkip:'The sample is not included in Export all. Drop your own picture to replace it.',noPicHint:'Add a picture to this slot to place and export it.',
 noPic:'No picture',noPicSlot:n=>`No picture in slot ${n}`,low:'low',tooLow:'too low',good:'Good for print',soft:'May look soft',blurry:'Will look blurry',
 placed:(w,h)=>`Placed ${w} × ${h} mm`,cropped:' · cropped by card edge',trim:(w,h,m)=>`Trim ${w} × ${h} mm · visible side margin after trim ${m} mm`,
 exporting:'Exporting…',exportingN:(k,n)=>`Exporting ${k}/${n}…`,confirmLow:(n,l)=>`${n} card(s) are below 300 dpi: ${l}. Export anyway?`,
@@ -141,7 +142,7 @@ sShow:'Показати',oBleed:'Зона вильоту',oBleedTip:'Тонов�
 oTrim:'Лінія обрізу',oTrimTip:'Червона пунктирна лінія, по якій друкарня ріже листівку. Кінцевий розмір — 105 × 148 мм. Різ може зміститися приблизно на 1 мм.',
 oSafe:'Безпечна зона й поля',oSafeTip:'Пунктирна рамка за 5 мм усередині лінії обрізу: усе важливе, як-от підпис, тримайте всередині. Тонкі вертикальні лінії показують бічне поле з розділу «Листівка».',
 oBack:'Зворот поруч',oBackTip:'Показує зворот цієї листівки (варіант G із цією назвою) поруч із лицьовим боком, щоб перевірити, як вони виглядають разом.',
-sExp:'Експорт',expOne:'Експортувати цю листівку',withBack:'Також експортувати звороти',filesNote:'Файли: «01 Багрянці - front.tiff», «01 Багрянці - back.tiff».',
+sExp:'Експорт',expOne:'Експортувати цю листівку',withBack:'Також експортувати звороти',filesNote:(f,b)=>b?`Файли: «${f} - front.tiff», «${f} - back.tiff».`:`Файл: «${f} - front.tiff».`,sample:'Спробувати на прикладі',sampleTag:'Приклад',sampleSkip:'Приклад не входить у «Експортувати все». Перетягніть свою картину, щоб замінити його.',noPicHint:'Додайте картину в цей слот, щоб розмістити й експортувати її.',
 noPic:'Немає картини',noPicSlot:n=>`Немає картини в слоті ${n}`,low:'низька',tooLow:'занизька',good:'Добре для друку',soft:'Може бути м’яко',blurry:'Буде розмито',
 placed:(w,h)=>`Розмір ${w} × ${h} мм`,cropped:' · обрізано краєм листівки',trim:(w,h,m)=>`Обріз ${w} × ${h} мм · видиме бічне поле після обрізу ${m} мм`,
 exporting:'Експорт…',exportingN:(k,n)=>`Експорт ${k}/${n}…`,confirmLow:(n,l)=>`Листівок із роздільністю менше 300 dpi: ${n} (${l}). Все одно експортувати?`,
@@ -180,10 +181,11 @@ const c=g.getContext('2d');c.setTransform(r,0,0,r,0,0);c.clearRect(0,0,gw,gh);if
 c.save();c.globalAlpha=.42;c.filter=`blur(${Math.max(2,k*.9)}px)`;c.drawImage(sl.img,q.x*k,q.y*k,q.w*k,q.h*k);c.restore();
 c.strokeStyle='rgba(91,78,62,.6)';c.setLineDash([3,3]);c.lineWidth=1;c.strokeRect(q.x*k+.5,q.y*k+.5,q.w*k-1,q.h*k-1)}
 function fitK(){const st=$('stage'),n=S.ov.back?2:1;const aw=(st.clientWidth-48-(n-1)*28)/(CW+2*GP+(n-1)*CW),ah=(Math.min(st.clientHeight,innerHeight-document.querySelector('header').offsetHeight)-24-50)/(CH+2*GP);S.k=Math.max(1.2,Math.min(aw,ah,6))}
+function drawEmpty(){const st=$('stage'),k=Math.max(1.6,Math.min((st.clientWidth-80)/CW,(Math.min(st.clientHeight,innerHeight-document.querySelector('header').offsetHeight)-80)/CH,4.2));const c=sizeCanvas($('emptyCard'),k);c.fillStyle='#fff';c.fillRect(0,0,CW*k,CH*k);const sv=S.ov;S.ov={bleed:true,trim:true,safe:false,back:false};drawOverlays(c,k);S.ov=sv;$('ecTxt').style.fontSize='';}
 function renderStage(){const sl=cur();fitK();drawGhost(sl,S.k);const fc=sizeCanvas($('front'),S.k);drawFront(fc,sl,S.k);drawOverlays(fc,S.k,true);
 $('front').classList.toggle('empty',!sl.img);$('backW').hidden=!S.ov.back;if(S.ov.back){const bc=sizeCanvas($('back'),S.k);drawBack(bc,sl.t,S.k);drawOverlays(bc,S.k)}
-$('stage').classList.toggle('none',!S.slots.some(s=>s.img))}
-function renderThumb(sl){const cv=document.querySelector(`.slot[data-i="${sl.i}"] canvas`),c=sizeCanvas(cv,38/CW);drawFront(c,sl,38/CW);const [cls,txt]=status(sl),st=document.querySelector(`.slot[data-i="${sl.i}"] .st`);st.className='st '+cls;st.textContent=txt}
+const none=!S.slots.some(s=>s.img);$('stage').classList.toggle('none',none);if(none)drawEmpty()}
+function renderThumb(sl){const cv=document.querySelector(`.slot[data-i="${sl.i}"] canvas`),c=sizeCanvas(cv,38/CW);drawFront(c,sl,38/CW);const [cls,txt]=status(sl),st=document.querySelector(`.slot[data-i="${sl.i}"] .st`);st.className='st '+cls;st.textContent=txt;if(sl.sample){const t=document.createElement('span');t.className='sample-tag';t.textContent=T('sampleTag');st.appendChild(t)}}
 function renderPanel(){const sl=cur(),has=!!sl.img;if(document.activeElement!==$('ttl'))$('ttl').value=sl.t;$('ttlReset').disabled=sl.t===sl.t0;$('pName').textContent=has?sl.name:T('noPicSlot',pad(sl.i));$('pPx').textContent=has?`${sl.iw} × ${sl.ih} px`:'';
 ['mAuto','mMan','sc','dx','dy','center','reset','rm','expOne'].forEach(id=>$(id).disabled=!has);
 $('mAuto').classList.toggle('on',sl.mode==='auto');$('mMan').classList.toggle('on',sl.mode==='manual');
@@ -191,7 +193,9 @@ $('sc').value=Math.round(sl.s*100);$('scV').textContent=Math.round(sl.s*100)+'%'
 if(has){const r=rect(sl),[cls,txt]=status(sl);$('dpi').textContent=Math.round(dpiOf(sl));$('dpiSt').className='st '+cls;$('dpiSt').textContent=T(cls==='ok'?'good':cls==='warn'?'soft':'blurry');
 const cl=r.x<0||r.y<0||r.x+r.w>CW||r.y+r.h>CH;$('placed').textContent=T('placed',r.w.toFixed(1),r.h.toFixed(1))+(cl?T('cropped'):'')}else{$('dpi').textContent='—';$('dpiSt').className='st';$('dpiSt').textContent='';$('placed').textContent=''}
 $('fTrim').classList.toggle('on',S.fit==='trim');$('fMargin').classList.toggle('on',S.fit==='margin');$('mg').disabled=S.fit==='trim';$('mg').value=S.margin;$('bl').value=S.bleed;$('trimNote').textContent=T('trim',(CW-2*S.bleed).toFixed(1),(CH-2*S.bleed).toFixed(1),(S.margin-S.bleed).toFixed(1));
-const n=S.slots.filter(s=>s.img).length;$('expAll').disabled=!n;$('expAll').textContent=T('expAll',n);
+document.querySelectorAll('.sec.needPic').forEach(e=>e.classList.toggle('off',!has));$('noPicHint').hidden=has;$('noPicHint').parentElement.classList.toggle('np',!has);
+const fn=`${pad(sl.i)} ${sl.t.replace(/[.,]/g,'')}`;$('expNote').textContent=sl.sample?T('sampleSkip'):T('filesNote',fn,S.withBack);
+const n=S.slots.filter(s=>s.img&&!s.sample).length;$('expAll').disabled=!n;$('expAll').textContent=T('expAll',n);
 document.querySelectorAll('.slot').forEach(e=>e.classList.toggle('cur',+e.dataset.i===S.cur))}
 function update(sl=cur()){renderThumb(sl);if(sl===cur()){renderStage();renderPanel()}else renderPanel()}
 function buildList(){$('list').innerHTML=S.slots.map(sl=>`<div class="slot" data-i="${sl.i}"><span class="n">${pad(sl.i)}</span><canvas></canvas><div class="t"><b>${sl.t}</b><span class="st"></span></div></div>`).join('');
@@ -209,7 +213,7 @@ async function decode(file){if(!isTiff(file))return createImageBitmap(file);
 const buf=await file.arrayBuffer(),ifds=UTIF.decode(buf);let p=ifds[0];for(const d of ifds)if((d.width||0)*(d.height||0)>(p.width||0)*(p.height||0))p=d;
 UTIF.decodeImage(buf,p);const rgba=UTIF.toRGBA8(p);return createImageBitmap(new ImageData(new Uint8ClampedArray(rgba.buffer,rgba.byteOffset,p.width*p.height*4),p.width,p.height))}
 async function load(file,i){let img;try{img=await decode(file)}catch(e){console.error(e);toast(T('cantRead',file.name));return false}
-Object.assign(S.slots[i],{img,name:file.name,iw:img.width,ih:img.height,mode:'auto',s:1,dx:0,dy:0});renderThumb(S.slots[i]);return true}
+Object.assign(S.slots[i],{sample:false,img,name:file.name,iw:img.width,ih:img.height,mode:'auto',s:1,dx:0,dy:0});renderThumb(S.slots[i]);return true}
 async function addFiles(files){files=[...files].filter(isImg);if(!files.length)return;let matched=0,filled=0,skipped=0;const used=new Set(),rest=[];
 for(const f of files){const i=matchIdx(f.name);if(i>=0&&!used.has(i)){used.add(i);if(await load(f,i))matched++}else rest.push(f)}
 for(const f of rest){const i=S.slots.findIndex(s=>!s.img&&!used.has(s.i));if(i<0){skipped++;continue}used.add(i);if(await load(f,i))filled++}
@@ -232,7 +236,7 @@ $('sc').oninput=e=>{const sl=cur();toMan(sl);sl.s=e.target.value/100;update(sl)}
 $('dx').onchange=e=>{const sl=cur();toMan(sl);sl.dx=+e.target.value||0;update(sl)};
 $('dy').onchange=e=>{const sl=cur();toMan(sl);sl.dy=+e.target.value||0;update(sl)};
 $('center').onclick=()=>{const sl=cur();sl.dx=0;sl.dy=0;update(sl)};
-$('rm').onclick=()=>{Object.assign(cur(),{img:null,name:'',iw:0,ih:0,mode:'auto',s:1,dx:0,dy:0});update()};
+$('rm').onclick=()=>{Object.assign(cur(),{sample:false,img:null,name:'',iw:0,ih:0,mode:'auto',s:1,dx:0,dy:0});update()};
 $('one').onchange=e=>{const f=e.target.files[0];if(f)load(f,S.cur).then(()=>update());e.target.value=''};
 $('files').onchange=e=>{addFiles(e.target.files);e.target.value=''};
 $('mg').onchange=e=>{S.margin=Math.max(0,Math.min(30,+e.target.value||0));S.slots.forEach(renderThumb);renderStage();renderPanel()};
@@ -243,7 +247,7 @@ $('ttl').oninput=e=>{const sl=cur();sl.t=e.target.value.trim()||sl.t0;document.q
 $('ttl').onblur=()=>$('ttl').value=cur().t;
 $('ttlReset').onclick=()=>{const sl=cur();sl.t=sl.t0;document.querySelector(`.slot[data-i="${sl.i}"] .t b`).textContent=sl.t;renderStage();renderPanel()};
 $('lang').onchange=e=>{LANG=e.target.value;localStorage.setItem('haydamaka-postcard-lang',LANG);applyLang()};
-$('withBack').onchange=e=>S.withBack=e.target.checked;
+$('withBack').onchange=e=>{S.withBack=e.target.checked;renderPanel()};
 addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('dragging')});
 addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dragging')});
 addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');addFiles(e.dataTransfer.files)});
@@ -270,12 +274,13 @@ function exportSlot(sl){const cv=document.createElement('canvas');cv.width=W;cv.
 if(S.withBack){const b=document.createElement('canvas');b.width=W;b.height=H;drawBack(b.getContext('2d'),sl.t,PXMM);save(tiff(b),fname(sl,'back'))}}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 $('expOne').onclick=async()=>{const b=$('expOne');b.disabled=true;b.textContent=T('exporting');await wait(30);exportSlot(cur());b.textContent=T('expOne');b.disabled=false};
-$('expAll').onclick=async()=>{const list=S.slots.filter(s=>s.img),low=list.filter(s=>dpiOf(s)<300);
+$('expAll').onclick=async()=>{const list=S.slots.filter(s=>s.img&&!s.sample),low=list.filter(s=>dpiOf(s)<300);
 if(low.length&&!confirm(T('confirmLow',low.length,low.map(s=>pad(s.i)).join(', '))))return;
 const b=$('expAll');b.disabled=true;for(let k=0;k<list.length;k++){b.textContent=T('exportingN',k+1,list.length);await wait(30);exportSlot(list[k]);await wait(700)}renderPanel();toast(T('exported',list.length,S.withBack))};
 let tt;function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4500)}
 document.fonts.load(`500 40px ${F}`,'ГАЙДАМАКА').then(()=>document.fonts.load(`italic 400 40px ${F}`,'«Щедрий» haydamaka')).finally(async()=>{buildList();applyLang();renderStage();renderPanel();
-try{const r=await fetch('assets/01 Багрянці.webp');if(r.ok){const b=await r.blob();await addFiles([new File([b],'01 Багрянці.webp',{type:'image/webp'})])}}catch(e){}});
+});
+$('sample').onclick=async()=>{const b=$('sample');b.disabled=true;try{const r=await fetch('assets/01 Багрянці.webp');const blob=await r.blob();if(await load(new File([blob],'01 Багрянці.webp',{type:'image/webp'}),0)){S.slots[0].sample=true;S.cur=0;renderThumb(S.slots[0]);renderStage();renderPanel()}}catch(e){toast(T('cantRead','sample'))}b.disabled=false};
 </script>
 </body>
 </html>

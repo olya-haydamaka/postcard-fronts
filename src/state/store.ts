@@ -31,6 +31,8 @@ export interface Slot extends Placement {
   ih: number;
   /** Whether this picture is kept in the browser yet (src/state/saved.ts); a new or replaced one is not. */
   saved: boolean;
+  /** The «Try with a sample» picture: tagged in the list and left out of Export all. A real picture clears it. */
+  sample: boolean;
 }
 
 /** What the browser keeps of a card besides its picture. */
@@ -50,6 +52,7 @@ export const savedCard = (sl: Slot): SavedCard => ({
   dy: sl.dy,
   bw: sl.bw,
   bh: sl.bh,
+  sample: sl.sample,
 });
 
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
@@ -62,7 +65,8 @@ export function parseSavedCard(v: unknown): SavedCard | null {
   if (!nums.every(isNum) || !(r.num === null || isNum(r.num))) return null;
   if (typeof r.t !== 'string' || typeof r.t0 !== 'string' || typeof r.name !== 'string') return null;
   if (r.mode !== 'auto' && r.mode !== 'manual') return null;
-  return r as SavedCard;
+  // Cards stored before the sample existed have no flag: they are the user's own pictures.
+  return { ...(r as SavedCard), sample: r.sample === true };
 }
 
 export interface Overlays {
@@ -236,6 +240,7 @@ export function addPicture(
     bw: 0,
     bh: 0,
     saved: false,
+    sample: false,
   };
   S.slots.push(slot);
   S.slots.sort(listOrder);
@@ -254,7 +259,7 @@ export function restoreSlot(card: SavedCard, file: File, preview: ImageBitmap): 
 /** A new picture for an existing card: number and title stay, the placement starts over in auto. */
 export function setPicture(sl: Slot, file: File, preview: ImageBitmap, iw: number, ih: number): void {
   if (sl.preview !== preview) sl.preview.close();
-  Object.assign(sl, { file, preview, name: file.name, iw, ih, saved: false });
+  Object.assign(sl, { file, preview, name: file.name, iw, ih, saved: false, sample: false });
   resetToAuto(sl);
 }
 

@@ -69,7 +69,8 @@ export const es: Dict = {
   sExp: 'Exportar',
   expOne: 'Exportar esta postal',
   withBack: 'Exportar también los reversos',
-  filesNote: 'Archivos: «01 Багрянці - front.tiff», «01 Багрянці - back.tiff».',
+  filesNote: (f, withBack) =>
+    withBack ? `Archivos: «${f} - front.tiff», «${f} - back.tiff».` : `Archivo: «${f} - front.tiff».`,
   low: 'baja',
   tooLow: 'demasiado baja',
   good: 'Buena para imprimir',
@@ -91,4 +92,9 @@ export const es: Dict = {
   restoring: (done, total) => `Recuperando tu trabajo: ${done} de ${total}`,
   notSaved: 'No queda espacio en el navegador para estas imágenes: al recargar desaparecerán.',
   source: 'Código fuente en GitHub',
+  sample: 'Probar con un ejemplo',
+  sampleTag: 'Ejemplo',
+  sampleSkip: 'El ejemplo no entra en «Exportar todo». Suelta tu propia imagen encima para sustituirlo.',
+  noPicHint: 'Añade imágenes para colocarlas y exportarlas.',
+  listEmpty: 'Las postales aparecerán aquí cuando añadas imágenes',
 };

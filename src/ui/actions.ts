@@ -8,6 +8,7 @@ import { cardLabel, exportFileName } from '../io/filename';
 import { encodeTiffRgb } from '../io/tiff-encode';
 import { drawBackG, loadBackFonts } from '../render/back-g';
 import { drawFront } from '../render/front';
+import { drawSample, SAMPLE_PX } from '../render/sample';
 import { readCards } from '../state/saved';
 import {
   addPicture,
@@ -87,7 +88,37 @@ export function addFiles(files: Iterable<File>): Promise<void> {
   });
 }
 
-/** A new picture for one card (Replace, or a file dropped on its row): its number and title stay. */
+/**
+ * «Try with a sample» (src/render/sample.ts): the drawn picture becomes card 01, tagged as the sample, selected, and
+ * left out of Export all. The button is on the empty card, so the list is empty when it runs.
+ */
+export function addSample(): Promise<void> {
+  return enqueue(async () => {
+    const cv = document.createElement('canvas');
+    cv.width = SAMPLE_PX.w;
+    cv.height = SAMPLE_PX.h;
+    const c = cv.getContext('2d');
+    if (!c) return;
+    drawSample(c, cv.width, cv.height);
+    const blob = await new Promise<Blob | null>((done) => cv.toBlob(done, 'image/jpeg', 0.9));
+    cv.width = cv.height = 0;
+    const file = blob && new File([blob], `01 ${t('sampleTag')}.jpg`, { type: 'image/jpeg' });
+    const d = file && (await decode(file));
+    if (!file || !d) {
+      toast(t('cantRead', t('sampleTag')));
+      return;
+    }
+    const { slot } = addPicture(file, d.bitmap, d.iw, d.ih);
+    slot.sample = true;
+    S.cur = slot;
+    refreshList();
+  });
+}
+
+/**
+ * A new picture for one card (Replace, or a file dropped on its row): its number and title stay. The sample makes way
+ * instead: the picture becomes a card of its own, named after its file.
+ */
 function replacePicture(sl: Slot, file: File, andSelect: boolean): Promise<void> {
   return enqueue(async () => {
     const d = await decode(file);
@@ -98,6 +129,12 @@ function replacePicture(sl: Slot, file: File, andSelect: boolean): Promise<void>
     // Removed while the file was being read.
     if (!S.slots.includes(sl)) {
       d.bitmap.close();
+      return;
+    }
+    if (sl.sample) {
+      removeSlot(sl);
+      S.cur = addPicture(file, d.bitmap, d.iw, d.ih).slot;
+      refreshList();
       return;
     }
     setPicture(sl, file, d.bitmap, d.iw, d.ih);
@@ -262,10 +299,12 @@ export async function exportCurrent(): Promise<void> {
   }
 }
 
-/** Every card. Below 300 dpi asks first. Sequential, 700 ms apart (the browser's multi-download pace). */
+/**
+ * Every card but the sample. Below 300 dpi asks first. Sequential, 700 ms apart (the browser's multi-download pace).
+ */
 export async function exportAll(): Promise<void> {
   if (busy.exporting) return;
-  const jobs = S.slots.map(snapshot);
+  const jobs = S.slots.filter((sl) => !sl.sample).map(snapshot);
   if (!jobs.length) return;
   const low = jobs.filter((j) => effectiveDpi(j.iw, j.rect.w) < 300);
   if (low.length && !confirm(t('confirmLow', low.length, low.map((j) => cardLabel(j.num, j.title)).join(', '))))

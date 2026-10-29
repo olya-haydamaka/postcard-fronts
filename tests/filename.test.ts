@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cardLabel, exportFileName, padNumber, parseFileName } from '../src/io/filename';
+import { cardLabel, exportBaseName, exportFileName, padNumber, parseFileName } from '../src/io/filename';
 
 describe('title and number from the file name', () => {
   it('a leading number gives the place; the rest, without the extension, is the title', () => {
@@ -52,6 +52,11 @@ describe('numbers and export file names', () => {
     );
     expect(exportFileName(13, "Подвір'я, що спить", 'front')).toBe("13 Подвір'я що спить - front.tiff");
     expect(exportFileName(null, 'Sunset', 'back')).toBe('Sunset - back.tiff');
+  });
+
+  it("the export note's stem is the file names' start", () => {
+    expect(exportBaseName(5, 'Сосна. Пісня гірського вітру')).toBe('05 Сосна Пісня гірського вітру');
+    expect(exportBaseName(null, 'Sunset')).toBe('Sunset');
   });
 
   it('a card is named by its number, or by its title without one', () => {

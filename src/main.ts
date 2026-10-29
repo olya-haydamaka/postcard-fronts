@@ -6,6 +6,7 @@ import { BACK_FONT } from './render/back-g';
 import { S } from './state/store';
 import {
   addFiles,
+  addSample,
   clearList,
   dropOnSlot,
   exportAll,
@@ -67,6 +68,11 @@ function boot(): void {
     update,
   });
   byId('clearAll').addEventListener('click', clearList);
+  const sample = byId<HTMLButtonElement>('sample');
+  sample.addEventListener('click', () => {
+    sample.disabled = true;
+    void addSample().finally(() => (sample.disabled = false));
+  });
   applyLang();
   renderStage();
   renderPanel();
