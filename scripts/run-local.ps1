@@ -8,7 +8,8 @@ dev (the default) starts the Vite dev server with hot reload: http://localhost:5
 prod builds the site and serves dist/ through wrangler with the real headers (CSP), as Cloudflare serves it:
 http://localhost:8787
 
-Installs the dependencies first (npm ci) when node_modules is missing or older than package-lock.json.
+Installs the dependencies first (npm ci) when node_modules is missing or doesn't match package-lock.json. A version
+bump alone doesn't count (scripts/deps.mjs).
 
 .PARAMETER Mode
 dev or prod.
@@ -62,11 +63,14 @@ try {
     ) -join ' '
     Invoke-Tool node @('-e', $nodeCheck)
 
-    $installed = 'node_modules/.package-lock.json'
-    if (-not (Test-Path -LiteralPath $installed) -or
-        (Get-Item -LiteralPath 'package-lock.json').LastWriteTimeUtc -gt (Get-Item -LiteralPath $installed -Force).LastWriteTimeUtc) {
+    & node scripts/deps.mjs check
+    if ($LASTEXITCODE -ne 0) {
         Write-Host 'Installing dependencies (npm ci)...'
-        Invoke-Tool npm @('ci')
+        try { Invoke-Tool npm @('ci') }
+        catch {
+            throw "$($_.Exception.Message) If npm reported EPERM or EBUSY, a dev server, preview or test run of this project still has a file in node_modules open: stop it and run this again."
+        }
+        Invoke-Tool node @('scripts/deps.mjs', 'stamp')
     }
 
     if ($Mode -eq 'dev') {

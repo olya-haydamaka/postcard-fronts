@@ -12,7 +12,8 @@ Usage: scripts/run-local.sh [dev|prod] [--lan] [--port N]
   --lan      listen on all interfaces, so phones and other computers on the network can open it
   --port N   use port N instead
 
-Installs the dependencies first (npm ci) when node_modules is missing or older than package-lock.json.
+Installs the dependencies first (npm ci) when node_modules is missing or doesn't match package-lock.json. A version
+bump alone doesn't count (scripts/deps.mjs).
 EOF
 }
 
@@ -53,9 +54,13 @@ if (have[0] < want[0] || (have[0] === want[0] && have[1] < want[1])) {
   process.exit(1);
 }'
 
-if [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+if ! node scripts/deps.mjs check; then
   echo "Installing dependencies (npm ci)..."
-  npm ci
+  npm ci || {
+    echo "If npm reported EPERM or EBUSY, a dev server, preview or test run of this project still has a file in node_modules open: stop it and run this again." >&2
+    exit 1
+  }
+  node scripts/deps.mjs stamp
 fi
 
 # The flags are fixed words and a checked number, so word splitting below is intended.
