@@ -65,6 +65,11 @@ describe('index.html head: search results and link previews', () => {
     expect(codes.every((c) => c in OG_LOCALE), 'a new language needs its og:locale').toBe(true);
     expect(meta('property', 'og:locale:alternate')).toEqual(codes.filter((c) => c !== 'uk').map((c) => OG_LOCALE[c]));
   });
+
+  it("names the organisation's site as the organisation writes it, first name first", () => {
+    // The tool belongs to the olya-haydamaka organisation. «Гайдамака Оля» is haydamaka.com's own wordmark.
+    expect(one('property', 'og:site_name')).toBe('Оля Гайдамака');
+  });
 });
 
 describe('the first paint', () => {
