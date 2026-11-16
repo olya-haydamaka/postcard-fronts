@@ -59,9 +59,12 @@ start open. The browser remembers the language and which sections you open or cl
 ### Known limits
 
 - Output is RGB with no embedded colour profile (read as sRGB). If the studio needs CMYK, convert in Photoshop with
-  the studio's profile; a browser can't apply ICC profiles reliably.
-- TIFF input is decoded with UTIF.js, which ignores embedded profiles (an Adobe RGB scan will look flatter); JPEG,
-  PNG and WebP are colour-managed by the browser.
+  the studio's profile.
+- A TIFF's own colour profile is applied, as browsers apply one in a JPEG, PNG or WebP: CMYK profiles of the common
+  kind (ICC tables `mft1` / `mft2`, such as Apple's Generic CMYK and the press profiles of Photoshop) and RGB ones
+  (Adobe RGB, Display P3, ProPhoto…). Not yet: grey profiles, ICC v4 table profiles (`mAB`) and RGB profiles made of
+  tables only (scanners); such a file reads without its profile. A CMYK TIFF saved without a profile gets a plain
+  conversion and looks too bright: save it with its profile. 16-bit TIFFs are read at 8-bit precision.
 - The on-screen preview uses a copy capped at 2400 px, so it looks softer than the export above roughly 1.2× scale.
   Export always re-reads the original file at full resolution. If the file changed on disk after you added it, that
   card is skipped with a message; add it again.
@@ -98,9 +101,10 @@ npm run build        # dist/
 ```
 
 - **Unit tests** (Vitest) pin the geometry, snapping, titles and numbers from file names, the card list's order,
-  export file names, the TIFF encoder and every UI string. Several compare against the design prototype in
-  [`docs/prototype/`](docs/prototype/) directly: the TIFF encoder must stay byte-identical to the prototype's, and
-  the translations must match its copy, apart from the deliberate changes listed in the test.
+  export file names, the TIFF encoder, the colour profiles of TIFF input (against LittleCMS's numbers) and every UI
+  string. Several compare against the design prototype in [`docs/prototype/`](docs/prototype/) directly: the TIFF
+  encoder must stay byte-identical to the prototype's, and the translations must match its copy, apart from the
+  deliberate changes listed in the test.
 - **End-to-end tests** (Playwright) run against the built site with its real headers, so a CSP violation fails
   them. `E2E_BASE_URL=http://127.0.0.1:5173 npx playwright test --project=chromium` runs them against the dev server.
 - **Stress test:** `STRESS=1 npm run e2e` loads and exports fifteen ~40 MP pictures and reports the longest
@@ -111,6 +115,7 @@ npm run build        # dist/
 ### Layout
 
 ```
+src/color/       a TIFF's ICC profile → sRGB: CMYK tables, RGB colourants and curves (pure, unit-tested)
 src/config/      card format (mm, dpi, bleed) and the preset: the back's starting name and website
 src/geometry/    auto-fit, manual placement, snapping, stage scale (pure, unit-tested)
 src/render/      front, cropped-preview ghost, overlays (and their casings), back (option G), the drawn sample

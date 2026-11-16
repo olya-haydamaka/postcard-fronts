@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Download, type Page } from '@playwright/test';
 import { LANG_NAMES, LANGS } from '../src/i18n';
+import { pressProfile, pressSrgb, RGB_PROFILES } from '../tests/icc-fixture';
+import { writeTiff } from '../tests/tiff-fixture';
 import {
   addGeneratedImages,
   decodeDownload,
@@ -329,6 +331,42 @@ test('TIFF input: Deflate, LZW and PackBits load in the built app', async ({ pag
   expect(await rowTitles(page)).toEqual(['deflate', 'lzw', 'packbits']);
   await expect(page.locator('#pPx')).toHaveText('120 × 160 px');
   for (const st of await page.locator('.slot .st').all()) await expect(st).toContainText('dpi');
+});
+
+test('TIFF input: an embedded CMYK profile is applied; untagged and sRGB files read as before @smoke', async ({ page }) => {
+  const [w, h] = [120, 160];
+  const inks = [200, 30, 160, 10];
+  const cmyk = Array.from({ length: w * h }, () => inks).flat();
+  const rgb = Array.from({ length: w * h }, () => [60, 120, 180]).flat();
+  await page.setInputFiles('#files', [
+    {
+      name: '01 profiled.tif',
+      mimeType: 'image/tiff',
+      buffer: writeTiff({ w, h, samples: cmyk, spp: 4, photometric: 5, compression: 'lzw', predictor: true, icc: pressProfile() }),
+    },
+    { name: '02 untagged.tif', mimeType: 'image/tiff', buffer: writeTiff({ w, h, samples: cmyk, spp: 4, photometric: 5 }) },
+    { name: '03 rgb.tif', mimeType: 'image/tiff', buffer: writeTiff({ w, h, samples: rgb, spp: 3, photometric: 2 }) },
+    {
+      name: '04 rgb srgb.tif',
+      mimeType: 'image/tiff',
+      buffer: writeTiff({ w, h, samples: rgb, spp: 3, photometric: 2, icc: RGB_PROFILES.srgbHp() }),
+    },
+  ]);
+  await expect(toast(page)).toHaveText('Додано: 4');
+  // The made-up press of the profile prints these inks as this colour; UTIF's plain formula gave (53, 216, 91).
+  const want = pressSrgb(inks.map((v) => v / 255)).map(Math.round) as [number, number, number];
+  // The first card is current: the preview shows the profile's colour too.
+  const box = (await page.locator('#front').boundingBox())!;
+  expectColor(await stagePixel(page, box.width / 2, box.height / 2), want, 3);
+
+  await page.uncheck('#withBack');
+  page.once('dialog', (d) => void d.accept()); // the pictures are under 300 dpi
+  const files = await nextDownloads(page, 4, () => page.click('#expAll'));
+  const front = (n: string) => decodeDownload(files.find((d) => d.suggestedFilename().startsWith(n))!);
+  const [profiled, untagged, plainRgb, taggedRgb] = await Promise.all(['01', '02', '03', '04'].map(front));
+  expectColor(pixel(profiled, 643, 897), want, 2);
+  expectColor(pixel(untagged, 643, 897), [53, 216, 91], 0);
+  expect(Buffer.compare(Buffer.from(taggedRgb.rgba), Buffer.from(plainRgb.rgba)), 'the sRGB profile changes nothing').toBe(0);
 });
 
 test('export: front and back TIFFs at 1287 × 1795 px, 300 dpi, no overlays (acceptance #4) @smoke', async ({

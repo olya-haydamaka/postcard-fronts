@@ -58,7 +58,10 @@ export async function decodePreview(file: File): Promise<Decoded> {
   return { bitmap: await downscale(full, PREVIEW_MAX_SIDE), iw, ih };
 }
 
-/** For export: the file at full resolution, decoded the same way as the prototype did. Throws if unreadable. */
+/**
+ * For export: the file at full resolution, decoded the same way as the prototype did, except that a TIFF's colour
+ * profile is applied (`tiff-pixels.ts`). Throws if unreadable.
+ */
 export async function decodeFull(file: File): Promise<Decoded> {
   if (isTiffFile(file)) return decodeTiff(file, null);
   const bitmap = await createImageBitmap(file);

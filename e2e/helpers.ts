@@ -3,6 +3,7 @@ import { deflateSync } from 'node:zlib';
 import { expect, type Download, type Page } from '@playwright/test';
 import UTIF from 'utif';
 import { encodeTiffRgb } from '../src/io/tiff-encode';
+import { lzw } from '../tests/tiff-fixture';
 
 /**
  * WebKit's own <select> builds its shadow tree with an inline stylesheet, which a strict style-src refuses. A bare
@@ -113,35 +114,6 @@ export function twoTone(w: number, h: number, top: [number, number, number], bot
   const rgb = new Uint8Array(w * h * 3);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) rgb.set(y < h / 2 ? top : bottom, (y * w + x) * 3);
   return rgb;
-}
-
-/** TIFF LZW (MSB-first): literal codes only, with a Clear code often enough to stay at 9-bit width. */
-function lzw(data: Uint8Array): Uint8Array {
-  const out: number[] = [];
-  let acc = 0;
-  let bits = 0;
-  const put = (code: number) => {
-    acc = (acc << 9) | code;
-    bits += 9;
-    while (bits >= 8) {
-      out.push((acc >>> (bits - 8)) & 255);
-      bits -= 8;
-    }
-    acc &= (1 << bits) - 1;
-  };
-  put(256);
-  let n = 0;
-  for (const b of data) {
-    if (n === 250) {
-      put(256);
-      n = 0;
-    }
-    put(b);
-    n++;
-  }
-  put(257);
-  if (bits > 0) out.push((acc << (8 - bits)) & 255);
-  return Uint8Array.from(out);
 }
 
 export function tiffFixture(w: number, h: number, rgb: Uint8Array, compression: 'packbits' | 'lzw' | 'deflate'): Buffer {

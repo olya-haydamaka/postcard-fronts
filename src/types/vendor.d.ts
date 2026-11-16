@@ -5,6 +5,8 @@ declare module 'utif' {
     height?: number;
     t256?: number[];
     t257?: number[];
+    /** The decoded samples, set by `decodeImage` (16-bit samples swapped to little-endian). */
+    data?: Uint8Array<ArrayBuffer>;
     [tag: string]: unknown;
   }
   interface UTIFStatic {
